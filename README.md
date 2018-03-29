@@ -27,10 +27,10 @@ to shows the available arguments.
 
 For example:
 
-``java -cp target/jnvmf-1.0-jar-with-dependencies.jar:target/jnvmf-1.0-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark -a 10.100.0.22 -p 4420 -g 4096 -i 3 -m RANDOM -n 10 -nqn nqn.2017-06.io.crail:cnode4420 -o bench.csv -qd 1 -rw read -s 4096 -qs 64 -H -I``
+``java -cp target/jnvmf-1.0-jar-with-dependencies.jar:target/jnvmf-1.0-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark -a 10.100.0.22 -p 4420 -g 4096 -i 3 -m RANDOM -n 10 -nqn nqn.2016-06.io.spdk:cnode1 -o bench.csv -qd 1 -rw read -s 4096 -qs 64 -H -I``
 
 * executes a ``-m RANDOM`` ``-rw read`` test
-* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``nqn nqn.2017-06.io.crail:cnode4420``
+* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``nqn nqn.2016-06.io.spdk:cnode1``
 * all accesses are aligned to ``-g 4096`` bytes
 * statistics are printed every ``-i 3`` seconds ``-n 10`` times
 * output is written to ``-o bench.csv`` in csv format
@@ -39,6 +39,71 @@ For example:
 * queue size ``-qs 64`` entries
 * histogram ``-H``
 * RDMA inline data ``-I``
+
+## Example API usage
+
+Sample usage of the jNVMf API to perform a read operation:
+
+```
+Nvme nvme = new Nvme();
+/* target ip and port we want to connect to */
+InetSocketAddress socketAddress = new InetSocketAddress("10.100.0.1", 4420);
+/* controller NVMe qualified name */
+NvmfTransportId tid = new NvmfTransportId(socketAddress,
+                new NvmeQualifiedName("nqn.2016-06.io.spdk:cnode1"));
+/* connect to controller */
+Controller controller = nvme.connect(tid);
+/* enable controller */
+controller.getControllerConfiguration().setEnable(true);
+controller.syncConfiguration();
+controller.waitUntilReady();
+/* create a io queue pair with submission queue size 64 */
+IOQueuePair queuePair = controller.createIOQueuePair(64);
+/* allocate and register buffer to be used for transfer */
+ByteBuffer buffer = ByteBuffer.allocateDirect(4096);
+KeyedNativeBuffer registeredBuffer = queuePair.registerMemory(buffer);
+/* create a new read command */
+NvmReadCommand command = new NvmReadCommand(queuePair);
+/* create a response */
+Response<NvmResponseCapsule> response = command.newResponse();
+/* set buffer */
+NvmIOCommandCapsule commandCapsule = command.getCommandCapsule();
+commandCapsule.setSGLDescriptor(buffer);
+/* set length, LBA and namespace identifier */
+NvmIOCommandSQE sqe = commandCapsule.getSubmissionQueueEntry();
+sqe.setStartingLBA(0);
+/* 0-based, i.e. read one block*/
+sqe.setNumberOfLogicalBlocks(0);
+sqe.setNamespaceIdentifier(new NamespaceIdentifier(1));
+volatile boolean done = false;
+/* set callback */
+command.setCallback(new OperationCallback() {
+      @Override
+      public void onStart() {
+      }
+
+      @Override
+      public void onComplete() {
+          System.out.println("command completed");
+          /* check response */
+          NvmCompletionQueueEntry cqe = response.getResponseCapsule().getCompletionQueueEntry();
+          StatusCode.Value statusCode = cqe.getStatusCode();
+          if (!statusCode.equals(GenericStatusCode.getInstance().SUCCESS)) {
+              System.out.println("Command not successful");
+          }
+          done = true;
+      }
+
+      @Override
+      public void onFailure(RdmaException e) {
+          System.out.println("There was an RDMA error when executing the command");
+          done = true;
+      }
+});
+command.execute(response);
+/* wait until command is done */
+while (!done);
+```
 
 ## Contributions
 
