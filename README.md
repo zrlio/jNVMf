@@ -18,16 +18,27 @@ where ``destinationAddress`` is the target IP address, ``localAddress`` is the l
 
 ## Run benchmark
 
-jNVMf provides a small benchmark tool which can be run with:
+jNVMf provides a small benchmark tool. Run:
 
 ``java -cp target/jnvmf-1.0-jar-with-dependencies.jar:target/jnvmf-1.0-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark 
 --help``
 
-which shows the available arguments. For example:
+to shows the available arguments. 
+
+For example:
 
 ``java -cp target/jnvmf-1.0-jar-with-dependencies.jar:target/jnvmf-1.0-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark -a 10.100.0.22 -p 4420 -g 4096 -i 3 -m RANDOM -n 10 -nqn nqn.2017-06.io.crail:cnode4420 -o bench.csv -qd 1 -rw read -s 4096 -qs 64 -H -I``
 
-executes a ``-m RANDOM`` ``-rw read`` test to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``nqn nqn.2017-06.io.crail:cnode4420``, all accesses are aligned to ``-g 4096`` bytes, statistics are printed every ``-i 3`` seconds ``-n 10`` times, output is written to ``-o bench.csv`` in csv format, queue depth ``-qd 1``, transfer size ``-s 4096`` bytes, queue size ``-qs 64`` entries, histogram ``-H`` and RDMA inline data ``-I``
+* executes a ``-m RANDOM`` ``-rw read`` test
+* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``nqn nqn.2017-06.io.crail:cnode4420``
+* all accesses are aligned to ``-g 4096`` bytes
+* statistics are printed every ``-i 3`` seconds ``-n 10`` times
+* output is written to ``-o bench.csv`` in csv format
+* queue depth ``-qd 1``
+* transfer size ``-s 4096`` bytes
+* queue size ``-qs 64`` entries
+* histogram ``-H``
+* RDMA inline data ``-I``
 
 ## Contributions
 
