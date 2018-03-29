@@ -19,16 +19,16 @@ package com.ibm.jnvmf;
 
 public class FabricsCompletionQueueEntry extends CompletionQueueEntry {
 
-    private StatusCode.Value statusCodeValue;
+  private StatusCode.Value statusCodeValue;
 
-    @Override
-    public final StatusCode.Value getStatusCode() {
-        return statusCodeValue;
-    }
+  @Override
+  public final StatusCode.Value getStatusCode() {
+    return statusCodeValue;
+  }
 
-    @Override
-    void update(NativeBuffer buffer) {
-        super.update(buffer);
-        statusCodeValue = getStatusCodeType().FabricsValueOf(getStatusCodeRaw(buffer));
-    }
+  @Override
+  void update(NativeBuffer buffer) {
+    super.update(buffer);
+    statusCodeValue = getStatusCodeType().fabricsValueOf(getStatusCodeRaw(buffer));
+  }
 }

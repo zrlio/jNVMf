@@ -17,128 +17,135 @@
 
 package com.ibm.jnvmf;
 
-import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NvmfRdmaEndpointTest {
-    private Process process;
-    private static final int RPING_DEFAULT_PORT = 7174;
-    private NvmfRdmaEndpointGroup endpointGroup;
 
-    NvmfRdmaEndpointTest() throws IOException {
-        endpointGroup = new NvmfRdmaEndpointGroup(2000);
-        endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
-    }
+  private Process process;
+  private static final int RPING_DEFAULT_PORT = 7174;
+  private NvmfRdmaEndpointGroup endpointGroup;
 
-    @BeforeAll
-    void startRping() throws IOException {
-        process = new ProcessBuilder("rping", "-s", "-P").start();
-    }
+  NvmfRdmaEndpointTest() throws IOException {
+    endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
+  }
 
-    @AfterAll
-    void endRping() throws IOException {
-        process.destroyForcibly();
-    }
+  @BeforeAll
+  void startRping() throws IOException {
+    process = new ProcessBuilder("rping", "-s", "-P").start();
+  }
 
-    NvmfRdmaEndpoint connect(NvmfRdmaEndpointGroup endpointGroup, int port) throws Exception {
-        NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
-        endpoint.setCqSize(128);
-        endpoint.setRqSize(64);
-        endpoint.setSqSize(64);
-        InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), port);
-        endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort()));
-        return endpoint;
-    }
+  @AfterAll
+  void endRping() throws IOException {
+    process.destroyForcibly();
+  }
 
-    @Tag("rdma")
-    @Test
-    void connectTest() throws Exception {
-        connect(endpointGroup, RPING_DEFAULT_PORT);
-    }
+  NvmfRdmaEndpoint connect(NvmfRdmaEndpointGroup endpointGroup, int port) throws Exception {
+    NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
+    endpoint.setCqSize(128);
+    endpoint.setRqSize(64);
+    endpoint.setSqSize(64);
+    InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), port);
+    endpoint.connect(new URI(
+        "rdma://" + socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort()));
+    return endpoint;
+  }
 
-    @Tag("rdma")
-    @Test
-    void checkArguments() throws Exception {
-        NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
-        endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
-        NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setSqSize(0));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setSqSize(-1));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setRqSize(0));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setRqSize(-1));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setCqSize(0));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setCqSize(-1));
-        assertThrows(IllegalArgumentException.class, () -> endpoint.setInlineDataSize(-1));
-        InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
-        assertThrows(IllegalArgumentException.class,
-                () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-                        ":" + socketAddress.getPort())));
-    }
+  @Tag("rdma")
+  @Test
+  void connectTest() throws Exception {
+    connect(endpointGroup, RPING_DEFAULT_PORT);
+  }
 
-    @Tag("rdma")
-    @Test
-    void createQP() throws Exception {
-        NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
-        endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
-        NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
-        InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
-        endpoint.setSqSize(Integer.MAX_VALUE);
-        endpoint.setRqSize(16);
-        endpoint.setCqSize(16);
-        assertThrows(IOException.class,
-                () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-                        ":" + socketAddress.getPort())));
-        endpoint.setSqSize(16);
-        endpoint.setRqSize(Integer.MAX_VALUE);
-        endpoint.setCqSize(16);
-        assertThrows(IOException.class,
-                () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-                        ":" + socketAddress.getPort())));
-        endpoint.setSqSize(16);
-        endpoint.setRqSize(16);
-        endpoint.setCqSize(Integer.MAX_VALUE);
-        assertThrows(IOException.class,
-                () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-                        ":" + socketAddress.getPort())));
-        endpoint.setSqSize(16);
-        endpoint.setRqSize(16);
-        endpoint.setCqSize(16);
-        endpoint.setInlineDataSize(Integer.MAX_VALUE);
-        assertThrows(IOException.class,
-                () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-                        ":" + socketAddress.getPort())));
-    }
+  @Tag("rdma")
+  @Test
+  void checkArguments() throws Exception {
+    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
+    NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setSqSize(0));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setSqSize(-1));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setRqSize(0));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setRqSize(-1));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setCqSize(0));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setCqSize(-1));
+    assertThrows(IllegalArgumentException.class, () -> endpoint.setInlineDataSize(-1));
+    InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
+    assertThrows(IllegalArgumentException.class,
+        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
+            ":" + socketAddress.getPort())));
+  }
 
-    @Tag("rdma")
-    @Test
-    void bufferPool() throws Exception {
-        NvmfRdmaEndpoint endpoint = connect(endpointGroup, RPING_DEFAULT_PORT);
-        KeyedNativeBufferPool bufferPool = endpoint.getBufferPool(512);
-        KeyedNativeBufferPool bufferPool2 = endpoint.getBufferPool(512);
-        assertEquals(bufferPool, bufferPool2);
-        KeyedNativeBufferPool bufferPool3 = endpoint.getBufferPool(513);
-        assertNotEquals(bufferPool, bufferPool3);
+  @Tag("rdma")
+  @Test
+  void createQP() throws Exception {
+    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
+    NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
+    InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
+    endpoint.setSqSize(Integer.MAX_VALUE);
+    endpoint.setRqSize(16);
+    endpoint.setCqSize(16);
+    assertThrows(IOException.class,
+        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
+            ":" + socketAddress.getPort())));
+    endpoint.setSqSize(16);
+    endpoint.setRqSize(Integer.MAX_VALUE);
+    endpoint.setCqSize(16);
+    assertThrows(IOException.class,
+        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
+            ":" + socketAddress.getPort())));
+    endpoint.setSqSize(16);
+    endpoint.setRqSize(16);
+    endpoint.setCqSize(Integer.MAX_VALUE);
+    assertThrows(IOException.class,
+        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
+            ":" + socketAddress.getPort())));
+    endpoint.setSqSize(16);
+    endpoint.setRqSize(16);
+    endpoint.setCqSize(16);
+    endpoint.setInlineDataSize(Integer.MAX_VALUE);
+    assertThrows(IOException.class,
+        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
+            ":" + socketAddress.getPort())));
+  }
 
-        KeyedNativeBuffer buffer = bufferPool.allocate();
-        assertEquals(512, buffer.capacity());
+  @Tag("rdma")
+  @Test
+  void bufferPool() throws Exception {
+    NvmfRdmaEndpoint endpoint = connect(endpointGroup, RPING_DEFAULT_PORT);
+    KeyedNativeBufferPool bufferPool = endpoint.getBufferPool(512);
+    KeyedNativeBufferPool bufferPool2 = endpoint.getBufferPool(512);
+    assertEquals(bufferPool, bufferPool2);
+    KeyedNativeBufferPool bufferPool3 = endpoint.getBufferPool(513);
+    assertNotEquals(bufferPool, bufferPool3);
 
-        int port = 1234;
-        Process process = new ProcessBuilder("rping", "-s", "-P", "-p", Integer.toString(port)).start();
-        NvmfRdmaEndpoint endpoint2 = connect(endpointGroup, port);
-        KeyedNativeBufferPool bufferPool4 = endpoint2.getBufferPool(512);
-        assertEquals(bufferPool, bufferPool4);
+    KeyedNativeBuffer buffer = bufferPool.allocate();
+    assertEquals(512, buffer.capacity());
 
-        NvmfRdmaEndpointGroup endpointGroup1 = new NvmfRdmaEndpointGroup(2000);
-        endpointGroup1.init(new NvmfRdmaEndpointFactory(endpointGroup1));
-        NvmfRdmaEndpoint endpoint3 = connect(endpointGroup1, port);
-        KeyedNativeBufferPool bufferPool5 = endpoint3.getBufferPool(512);
-        assertNotEquals(bufferPool, bufferPool5);
-        process.destroyForcibly();
-    }
+    int port = 1234;
+    Process process = new ProcessBuilder("rping", "-s", "-P", "-p", Integer.toString(port)).start();
+    NvmfRdmaEndpoint endpoint2 = connect(endpointGroup, port);
+    KeyedNativeBufferPool bufferPool4 = endpoint2.getBufferPool(512);
+    assertEquals(bufferPool, bufferPool4);
+
+    NvmfRdmaEndpointGroup endpointGroup1 = new NvmfRdmaEndpointGroup(2000);
+    endpointGroup1.init(new NvmfRdmaEndpointFactory(endpointGroup1));
+    NvmfRdmaEndpoint endpoint3 = connect(endpointGroup1, port);
+    KeyedNativeBufferPool bufferPool5 = endpoint3.getBufferPool(512);
+    assertNotEquals(bufferPool, bufferPool5);
+    process.destroyForcibly();
+  }
 }

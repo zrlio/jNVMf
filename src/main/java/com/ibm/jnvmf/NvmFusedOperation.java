@@ -18,23 +18,29 @@
 package com.ibm.jnvmf;
 
 public class NvmFusedOperation extends EEnum<NvmFusedOperation.Value> {
-    public class Value extends EEnum.Value {
-        Value(int value) {
-            super(value);
-        }
+
+  public class Value extends EEnum.Value {
+
+    Value(int value) {
+      super(value);
     }
+  }
 
-    public final Value NORMAL = new Value(0x0);
-    public final Value FIRST_COMMAND = new Value(0x1);
-    public final Value SECOND_COMMAND = new Value(0x2);
+  // CHECKSTYLE_OFF: MemberNameCheck
 
-    private NvmFusedOperation() {
-        super(2);
-    }
+  public final Value NORMAL = new Value(0x0);
+  public final Value FIRST_COMMAND = new Value(0x1);
+  public final Value SECOND_COMMAND = new Value(0x2);
 
-    private final static NvmFusedOperation instance = new NvmFusedOperation();
+  // CHECKSTYLE_ON: MemberNameCheck
 
-    public static NvmFusedOperation getInstance() {
-        return instance;
-    }
+  private NvmFusedOperation() {
+    super(2);
+  }
+
+  private static final NvmFusedOperation instance = new NvmFusedOperation();
+
+  public static NvmFusedOperation getInstance() {
+    return instance;
+  }
 }

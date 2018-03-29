@@ -19,7 +19,7 @@ package com.ibm.jnvmf;
 
 public class QueueEntrySize extends Pow2Size {
 
-    QueueEntrySize(int pow2Size) {
-        super(pow2Size);
-    }
+  QueueEntrySize(int pow2Size) {
+    super(pow2Size);
+  }
 }

@@ -17,22 +17,23 @@
 
 package com.ibm.jnvmf;
 
-public abstract class ResponseCapsule<Cqe extends CompletionQueueEntry> {
-    /*
-     * NVMf Spec 1.0 - 2.2
-     *
-     * RDMA transports do not contain in-capsule data in responses
-     *
-     */
-    final static int SIZE = 16;
+public abstract class ResponseCapsule<CqeT extends CompletionQueueEntry> {
 
-    private final Cqe completionQueueEntry;
+  /*
+   * NVMf Spec 1.0 - 2.2
+   *
+   * RDMA transports do not contain in-capsule data in responses
+   *
+   */
+  static final int SIZE = 16;
 
-    public ResponseCapsule(Cqe completionQueueEntry) {
-        this.completionQueueEntry = completionQueueEntry;
-    }
+  private final CqeT completionQueueEntry;
 
-    public Cqe getCompletionQueueEntry() {
-        return completionQueueEntry;
-    }
+  public ResponseCapsule(CqeT completionQueueEntry) {
+    this.completionQueueEntry = completionQueueEntry;
+  }
+
+  public CqeT getCompletionQueueEntry() {
+    return completionQueueEntry;
+  }
 }

@@ -18,5 +18,6 @@
 package com.ibm.jnvmf;
 
 public interface MemoryAllocator {
-    NativeBuffer allocate(int size);
+
+  NativeBuffer allocate(int size);
 }

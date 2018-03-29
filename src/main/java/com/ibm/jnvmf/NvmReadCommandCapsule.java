@@ -17,16 +17,17 @@
 
 package com.ibm.jnvmf;
 
-public class NvmReadCommandCapsule extends NvmIOCommandCapsule {
-    private static SubmissionQueueEntryFactory<NvmIOCommandSQE> sqeFactory =
-            buffer -> new NvmReadCommandSQE(buffer);
+public class NvmReadCommandCapsule extends NvmIoCommandCapsule {
 
-    NvmReadCommandCapsule(KeyedNativeBuffer buffer, int additionalSGLs) {
-        super(buffer, sqeFactory, additionalSGLs, 0, 0);
-    }
+  private static SubmissionQueueEntryFactory<NvmIoCommandSqe> sqeFactory =
+      buffer -> new NvmReadCommandSqe(buffer);
 
-    @Override
-    public NvmReadCommandSQE getSubmissionQueueEntry() {
-        return (NvmReadCommandSQE) super.getSubmissionQueueEntry();
-    }
+  NvmReadCommandCapsule(KeyedNativeBuffer buffer, int additionalSgls) {
+    super(buffer, sqeFactory, additionalSgls, 0, 0);
+  }
+
+  @Override
+  public NvmReadCommandSqe getSubmissionQueueEntry() {
+    return (NvmReadCommandSqe) super.getSubmissionQueueEntry();
+  }
 }

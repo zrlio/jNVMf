@@ -18,17 +18,18 @@
 package com.ibm.jnvmf;
 
 public class Response<R extends ResponseCapsule> extends Operation {
-    private final R responseCapsule;
 
-    public Response(R responseCapsule) {
-        this.responseCapsule = responseCapsule;
-    }
+  private final R responseCapsule;
 
-    void update(NativeBuffer buffer) {
-        responseCapsule.getCompletionQueueEntry().update(buffer);
-    }
+  public Response(R responseCapsule) {
+    this.responseCapsule = responseCapsule;
+  }
 
-    public R getResponseCapsule() {
-        return responseCapsule;
-    }
+  void update(NativeBuffer buffer) {
+    responseCapsule.getCompletionQueueEntry().update(buffer);
+  }
+
+  public R getResponseCapsule() {
+    return responseCapsule;
+  }
 }

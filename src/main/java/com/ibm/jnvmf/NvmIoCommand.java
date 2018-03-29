@@ -17,13 +17,9 @@
 
 package com.ibm.jnvmf;
 
-public class LBADataSize extends Pow2Size {
-    private static final int MINIMUM_DATA_SIZE = 9;
+public abstract class NvmIoCommand<C extends NvmIoCommandCapsule> extends NvmCommand<C> {
 
-    LBADataSize(int pow2Size) {
-        super(pow2Size);
-        if (pow2Size < MINIMUM_DATA_SIZE) {
-            throw new IllegalArgumentException("Minimum LBA data size is " + MINIMUM_DATA_SIZE);
-        }
-    }
+  NvmIoCommand(IoQueuePair queuePair, C commandCapsule) {
+    super(queuePair, commandCapsule);
+  }
 }

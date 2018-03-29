@@ -18,30 +18,31 @@
 package com.ibm.jnvmf;
 
 public class RdmaCmRequestPrivateData extends NativeData<NativeBuffer> {
-    final static int SIZE = 32;
-    private final static int RECORD_FORMAT_OFFSET = 0;
-    private final static int QUEUE_ID_OFFSET = 2;
-    private final static int RDMA_QP_RECEIVE_QUEUE_SIZE_OFFSET = 4;
-    private final static int RDMA_QP_SEND_QUEUE_SIZE_OFFSET = 6;
 
-    RdmaCmRequestPrivateData(NativeBuffer buffer) {
-        super(buffer, SIZE);
-    }
+  static final int SIZE = 32;
+  private static final int RECORD_FORMAT_OFFSET = 0;
+  private static final int QUEUE_ID_OFFSET = 2;
+  private static final int RDMA_QP_RECEIVE_QUEUE_SIZE_OFFSET = 4;
+  private static final int RDMA_QP_SEND_QUEUE_SIZE_OFFSET = 6;
 
-    void setQueueID(QueueID queueID) {
-        getBuffer().putShort(QUEUE_ID_OFFSET, queueID.toShort());
-    }
+  RdmaCmRequestPrivateData(NativeBuffer buffer) {
+    super(buffer, SIZE);
+  }
 
-    void setRdmaQPReceiveQueueSize(short size) {
-        getBuffer().putShort(RDMA_QP_RECEIVE_QUEUE_SIZE_OFFSET, size);
-    }
+  void setQueueId(QueueId queueId) {
+    getBuffer().putShort(QUEUE_ID_OFFSET, queueId.toShort());
+  }
 
-    void setRdmaQPSendQueueSize(short size) {
-        getBuffer().putShort(RDMA_QP_SEND_QUEUE_SIZE_OFFSET, size);
-    }
+  void setRdmaQpReceiveQueueSize(short size) {
+    getBuffer().putShort(RDMA_QP_RECEIVE_QUEUE_SIZE_OFFSET, size);
+  }
 
-    @Override
-    void initialize() {
-        getBuffer().putShort(RECORD_FORMAT_OFFSET, (short) 0);
-    }
+  void setRdmaQpSendQueueSize(short size) {
+    getBuffer().putShort(RDMA_QP_SEND_QUEUE_SIZE_OFFSET, size);
+  }
+
+  @Override
+  void initialize() {
+    getBuffer().putShort(RECORD_FORMAT_OFFSET, (short) 0);
+  }
 }

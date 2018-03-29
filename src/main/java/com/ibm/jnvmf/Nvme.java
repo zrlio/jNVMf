@@ -22,25 +22,27 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class Nvme {
-    private final NvmeQualifiedName hostNvmeQualifiedName;
 
-    public Nvme(NvmeQualifiedName hostNvmeQualifiedName) {
-        if (hostNvmeQualifiedName == null) {
-            throw new IllegalArgumentException("Host NQN null");
-        }
-        this.hostNvmeQualifiedName = hostNvmeQualifiedName;
-    }
+  private final NvmeQualifiedName hostNvmeQualifiedName;
 
-    public Nvme() throws UnknownHostException {
-        this(new NvmeQualifiedName("nqn.2014-08.com.example:" +
-                InetAddress.getLocalHost().getCanonicalHostName()));
+  public Nvme(NvmeQualifiedName hostNvmeQualifiedName) {
+    if (hostNvmeQualifiedName == null) {
+      throw new IllegalArgumentException("Host NQN null");
     }
+    this.hostNvmeQualifiedName = hostNvmeQualifiedName;
+  }
 
-    public Controller connect(NvmfTransportId transportId) throws IOException {
-        return new Controller(hostNvmeQualifiedName, transportId);
-    }
+  public Nvme() throws UnknownHostException {
+    // TODO: use UUID
+    this(new NvmeQualifiedName("nqn.2014-08.com.example:"
+        + InetAddress.getLocalHost().getCanonicalHostName()));
+  }
 
-    public NvmeQualifiedName getHostNvmeQualifiedName() {
-        return hostNvmeQualifiedName;
-    }
+  public Controller connect(NvmfTransportId transportId) throws IOException {
+    return new Controller(hostNvmeQualifiedName, transportId);
+  }
+
+  public NvmeQualifiedName getHostNvmeQualifiedName() {
+    return hostNvmeQualifiedName;
+  }
 }

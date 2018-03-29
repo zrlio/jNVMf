@@ -19,13 +19,15 @@ package com.ibm.jnvmf;
 
 import java.io.IOException;
 
-public class FabricsPropertyGetCommand extends Command<FabricsPropertyGetCommandCapsule, FabricsPropertyGetResponseCapsule> {
-    FabricsPropertyGetCommand(QueuePair queuePair) throws IOException {
-        super(queuePair, new FabricsPropertyGetCommandCapsule(queuePair.allocateCommandCapsule()));
-    }
+public class FabricsPropertyGetCommand extends
+    Command<FabricsPropertyGetCommandCapsule, FabricsPropertyGetResponseCapsule> {
 
-    @Override
-    public Response<FabricsPropertyGetResponseCapsule> newResponse() {
-        return new Response<>(new FabricsPropertyGetResponseCapsule());
-    }
+  FabricsPropertyGetCommand(QueuePair queuePair) throws IOException {
+    super(queuePair, new FabricsPropertyGetCommandCapsule(queuePair.allocateCommandCapsule()));
+  }
+
+  @Override
+  public Response<FabricsPropertyGetResponseCapsule> newResponse() {
+    return new Response<>(new FabricsPropertyGetResponseCapsule());
+  }
 }

@@ -18,27 +18,29 @@
 package com.ibm.jnvmf;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
-public class NvmWriteCommand extends NvmIOCommand<NvmWriteCommandCapsule> {
+public class NvmWriteCommand extends NvmIoCommand<NvmWriteCommandCapsule> {
 
-    private static NvmWriteCommandCapsule newNvmWriteCommandCapsule(IOQueuePair queuePair) throws IOException {
-        int inCapsuleDataOffset = queuePair.getController().getIdentifyControllerData().getInCapsuleDataOffset();
-        return new NvmWriteCommandCapsule(queuePair.allocateCommandCapsule(),
-                queuePair.getMaximumAdditionalSGLs(), inCapsuleDataOffset, queuePair.getInCapsuleDataSize());
-    }
+  private static NvmWriteCommandCapsule newNvmWriteCommandCapsule(IoQueuePair queuePair)
+      throws IOException {
+    int inCapsuleDataOffset = queuePair.getController().getIdentifyControllerData()
+        .getInCapsuleDataOffset();
+    return new NvmWriteCommandCapsule(queuePair.allocateCommandCapsule(),
+        queuePair.getMaximumAdditionalSgls(), inCapsuleDataOffset,
+        queuePair.getInCapsuleDataSize());
+  }
 
-    public NvmWriteCommand(IOQueuePair queuePair) throws IOException {
-        super(queuePair, newNvmWriteCommandCapsule(queuePair));
-    }
+  public NvmWriteCommand(IoQueuePair queuePair) throws IOException {
+    super(queuePair, newNvmWriteCommandCapsule(queuePair));
+  }
 
-    public NativeBuffer getIncapsuleData() throws ExecutionException, InterruptedException {
-        return getCommandCapsule().getIncapsuleData();
-    }
+  public NativeBuffer getIncapsuleData() {
+    return getCommandCapsule().getIncapsuleData();
+  }
 
-    public void setIncapsuleData(NativeBuffer incapsuleData) throws ExecutionException, InterruptedException {
-        //TODO support to set buffer outside of capsule by using RDMA sgls
-        //TODO change RDMA sgl accordingly => we don't want to send unnecessary data on the wire
-        getCommandCapsule().setIncapsuleData(incapsuleData);
-    }
+  public void setIncapsuleData(NativeBuffer incapsuleData) {
+    //TODO support to set buffer outside of capsule by using RDMA sgls
+    //TODO change RDMA sgl accordingly => we don't want to send unnecessary data on the wire
+    getCommandCapsule().setIncapsuleData(incapsuleData);
+  }
 }

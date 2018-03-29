@@ -17,9 +17,9 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsConnectResponseCapsule extends ResponseCapsule<FabricsConnectResponseCQE> {
+public class FabricsConnectResponseCapsule extends ResponseCapsule<FabricsConnectResponseCqe> {
 
-    public FabricsConnectResponseCapsule() {
-        super(new FabricsConnectResponseCQE());
-    }
+  public FabricsConnectResponseCapsule() {
+    super(new FabricsConnectResponseCqe());
+  }
 }

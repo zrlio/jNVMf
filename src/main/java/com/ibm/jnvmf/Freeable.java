@@ -20,7 +20,8 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public interface Freeable {
-    void free() throws IOException;
 
-    boolean isValid();
+  void free() throws IOException;
+
+  boolean isValid();
 }

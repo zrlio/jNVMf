@@ -18,15 +18,17 @@
 package com.ibm.jnvmf;
 
 
-public final class FabricsConnectCommandCapsule extends FabricsCommandCapsule<FabricsConnectCommandSQE> {
-    private final static SubmissionQueueEntryFactory<FabricsConnectCommandSQE> sqeFactory =
-            buffer -> new FabricsConnectCommandSQE(buffer);
+public final class FabricsConnectCommandCapsule extends
+    FabricsCommandCapsule<FabricsConnectCommandSqe> {
 
-    FabricsConnectCommandCapsule(KeyedNativeBuffer buffer) {
-        super(buffer, sqeFactory);
-    }
+  private static final SubmissionQueueEntryFactory<FabricsConnectCommandSqe> sqeFactory =
+      buffer -> new FabricsConnectCommandSqe(buffer);
 
-    public void setSGLDescriptor(FabricsConnectCommandData data) {
-        getSubmissionQueueEntry().getKeyedSGLDataBlockDescriptor().set(data.getBuffer());
-    }
+  FabricsConnectCommandCapsule(KeyedNativeBuffer buffer) {
+    super(buffer, sqeFactory);
+  }
+
+  public void setSglDescriptor(FabricsConnectCommandData data) {
+    getSubmissionQueueEntry().getKeyedSglDataBlockDescriptor().set(data.getBuffer());
+  }
 }

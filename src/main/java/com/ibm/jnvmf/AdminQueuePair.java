@@ -20,19 +20,20 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public class AdminQueuePair extends QueuePair {
-    /* NVMf Spec 1.0 - 5.3
-    *  32 entries is the minimum admin submission queue size */
-    final static short MINIMUM_SUBMISSION_QUEUE_SIZE = 32;
 
-    AdminQueuePair(Controller controller) throws IOException {
-        /* NVMf Spec 1.0 - 7.3.2 Admin and Fabrics command do not carry any incapsule data */
-        super(controller, QueueID.ADMIN, MINIMUM_SUBMISSION_QUEUE_SIZE);
-    }
+  /* NVMf Spec 1.0 - 5.3
+   *  32 entries is the minimum admin submission queue size */
+  static final short MINIMUM_SUBMISSION_QUEUE_SIZE = 32;
 
-    @Override
-    FabricsConnectResponseCQE connect() throws IOException {
-        FabricsConnectResponseCQE cqe = super.connect();
-        getController().setControllerId(cqe.success().getControllerId());
-        return cqe;
-    }
+  AdminQueuePair(Controller controller) throws IOException {
+    /* NVMf Spec 1.0 - 7.3.2 Admin and Fabrics command do not carry any incapsule data */
+    super(controller, QueueId.ADMIN, MINIMUM_SUBMISSION_QUEUE_SIZE);
+  }
+
+  @Override
+  FabricsConnectResponseCqe connect() throws IOException {
+    FabricsConnectResponseCqe cqe = super.connect();
+    getController().setControllerId(cqe.success().getControllerId());
+    return cqe;
+  }
 }

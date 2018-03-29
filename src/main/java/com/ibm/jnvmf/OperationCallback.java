@@ -18,7 +18,10 @@
 package com.ibm.jnvmf;
 
 public interface OperationCallback {
-    void onStart();
-    void onComplete();
-    void onFailure(RdmaException e);
+
+  void onStart();
+
+  void onComplete();
+
+  void onFailure(RdmaException exception);
 }

@@ -17,129 +17,138 @@
 
 package com.ibm.jnvmf;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 class EEnumTest {
-    static class TestEnum extends EEnum<TestEnum.Value> {
-        TestEnum(int maxValue) {
-            super(maxValue);
-        }
 
-        class Value extends EEnum<Value>.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+  static class TestEnum extends EEnum<TestEnum.Value> {
 
+    TestEnum(int maxValue) {
+      super(maxValue);
     }
 
-    static class TestEnumInherit extends TestEnum {
-        class Value extends TestEnum.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+    class Value extends EEnum<Value>.Value {
 
-        TestEnumInherit(int maxValue) {
-            super(maxValue);
-        }
+      Value(int value) {
+        super(value);
+      }
     }
 
-    static class OtherTestEnum extends EEnum<TestEnum.Value> {
-        OtherTestEnum(int maxValue) {
-            super(maxValue);
-        }
+  }
 
-        class Value extends EEnum<Value>.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+  static class TestEnumInherit extends TestEnum {
 
+    class Value extends TestEnum.Value {
+
+      Value(int value) {
+        super(value);
+      }
     }
 
-    @Test
-    void basic() {
-        TestEnum test = new TestEnum(0x0);
-        TestEnum.Value value = test.new Value(0x0);
-        assertEquals(value, test.valueOf(0x0));
+    TestEnumInherit(int maxValue) {
+      super(maxValue);
+    }
+  }
+
+  static class OtherTestEnum extends EEnum<TestEnum.Value> {
+
+    OtherTestEnum(int maxValue) {
+      super(maxValue);
     }
 
-    @Test
-    void valueOutOfBounds() {
-        final TestEnum test = new TestEnum(0x0);
-        assertThrows(IllegalArgumentException.class, () -> test.new Value(0x1));
-        assertThrows(IllegalArgumentException.class, () -> test.new Value(-1));
+    class Value extends EEnum<Value>.Value {
+
+      Value(int value) {
+        super(value);
+      }
     }
 
-    @Test
-    void doubleAssignValue() {
-        final TestEnum test = new TestEnum(0x0);
-        test.new Value(0x0);
-        assertThrows(IllegalArgumentException.class, () -> test.new Value(0x0));
+  }
+
+  @Test
+  void basic() {
+    TestEnum test = new TestEnum(0x0);
+    TestEnum.Value value = test.new Value(0x0);
+    assertEquals(value, test.valueOf(0x0));
+  }
+
+  @Test
+  void valueOutOfBounds() {
+    final TestEnum test = new TestEnum(0x0);
+    assertThrows(IllegalArgumentException.class, () -> test.new Value(0x1));
+    assertThrows(IllegalArgumentException.class, () -> test.new Value(-1));
+  }
+
+  @Test
+  void doubleAssignValue() {
+    final TestEnum test = new TestEnum(0x0);
+    test.new Value(0x0);
+    assertThrows(IllegalArgumentException.class, () -> test.new Value(0x0));
+  }
+
+  @Test
+  void nonConsecutive() {
+    final TestEnum test = new TestEnum(128);
+    TestEnum.Value value1 = test.new Value(0);
+    TestEnum.Value value2 = test.new Value(128);
+    assertEquals(value1, test.valueOf(0));
+    assertEquals(value2, test.valueOf(128));
+    for (int i = 1; i < 128; i++) {
+      final int j = i;
+      assertThrows(IllegalArgumentException.class, () -> test.valueOf(j));
     }
+  }
 
-    @Test
-    void nonConsecutive() {
-        final TestEnum test = new TestEnum(128);
-        TestEnum.Value value1 = test.new Value(0);
-        TestEnum.Value value2 = test.new Value(128);
-        assertEquals(value1, test.valueOf(0));
-        assertEquals(value2, test.valueOf(128));
-        for (int i = 1; i < 128; i++) {
-            final int j = i;
-            assertThrows(IllegalArgumentException.class, () -> test.valueOf(j));
-        }
-    }
+  @Test
+  void toIntByte() {
+    TestEnum test = new TestEnum(34);
+    int intValue = 1;
+    TestEnum.Value value = test.new Value(intValue);
+    assertEquals(intValue, value.toInt());
+    byte byteValue = 2;
+    value = test.new Value(byteValue);
+    assertEquals(byteValue, value.toByte());
+  }
 
-    @Test
-    void toIntByte() {
-        TestEnum test = new TestEnum(34);
-        int intValue = 1;
-        TestEnum.Value value = test.new Value(intValue);
-        assertEquals(intValue, value.toInt());
-        byte byteValue = 2;
-        value = test.new Value(byteValue);
-        assertEquals(byteValue, value.toByte());
-    }
+  @Test
+  void equals() {
+    TestEnum test1 = new TestEnum(0);
+    TestEnum.Value value1 = test1.new Value(0);
+    assertEquals(value1, value1);
+    TestEnum test2 = new TestEnum(1);
+    TestEnum.Value value2 = test2.new Value(0);
+    assertEquals(value1, value2);
 
-    @Test
-    void equals() {
-        TestEnum test1 = new TestEnum(0);
-        TestEnum.Value value1 = test1.new Value(0);
-        assertEquals(value1, value1);
-        TestEnum test2 = new TestEnum(1);
-        TestEnum.Value value2 = test2.new Value(0);
-        assertEquals(value1, value2);
+    TestEnum.Value value3 = test2.new Value(1);
+    assertNotEquals(value1, value3);
+  }
 
-        TestEnum.Value value3 = test2.new Value(1);
-        assertNotEquals(value1, value3);
-    }
+  @Test
+  void inheritanceEqual() {
+    TestEnum test1 = new TestEnum(0);
+    TestEnum.Value value1 = test1.new Value(0);
+    TestEnumInherit test2 = new TestEnumInherit(0);
+    TestEnum.Value value2 = test2.new Value(0);
+    assertEquals(value1, value2);
 
-    @Test
-    void inheritanceEqual() {
-        TestEnum test1 = new TestEnum(0);
-        TestEnum.Value value1 = test1.new Value(0);
-        TestEnumInherit test2 = new TestEnumInherit(0);
-        TestEnum.Value value2 = test2.new Value(0);
-        assertEquals(value1, value2);
+    TestEnumInherit test3 = new TestEnumInherit(0);
+    TestEnumInherit.Value value3 = test3.new Value(0);
+    assertEquals(value1, value3);
+    assertEquals(value2, value3);
 
-        TestEnumInherit test3 = new TestEnumInherit(0);
-        TestEnumInherit.Value value3 = test3.new Value(0);
-        assertEquals(value1, value3);
-        assertEquals(value2, value3);
+    OtherTestEnum test4 = new OtherTestEnum(0);
+    OtherTestEnum.Value value4 = test4.new Value(0);
+    assertNotEquals(value1, value4);
+    assertNotEquals(value2, value4);
+    assertNotEquals(value3, value4);
+  }
 
-        OtherTestEnum test4 = new OtherTestEnum(0);
-        OtherTestEnum.Value value4 = test4.new Value(0);
-        assertNotEquals(value1, value4);
-        assertNotEquals(value2, value4);
-        assertNotEquals(value3, value4);
-    }
-
-    @Test
-    void maxValue() {
-        assertThrows(IllegalArgumentException.class, () -> new TestEnum(-1));
-    }
+  @Test
+  void maxValue() {
+    assertThrows(IllegalArgumentException.class, () -> new TestEnum(-1));
+  }
 }

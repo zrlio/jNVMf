@@ -20,5 +20,6 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public interface KeyedNativeBufferPool {
-    KeyedNativeBuffer allocate() throws IOException;
+
+  KeyedNativeBuffer allocate() throws IOException;
 }

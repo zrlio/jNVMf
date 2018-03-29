@@ -17,14 +17,22 @@
 
 package com.ibm.jnvmf;
 
-public class AdminKeepAliveCommandSQE extends AdminSubmissionQeueueEntry {
-    AdminKeepAliveCommandSQE(NativeBuffer buffer) {
-        super(buffer);
-    }
+public class FabricsPropertyGetResponseCqe extends FabricsCompletionQueueEntry {
 
-    @Override
-    void initialize() {
-        super.initialize();
-        setOpcode(AdminCommandOpcode.KEEP_ALIVE);
-    }
+  /*
+   * NVMf Spec 1.0 - 3.4
+   */
+  private static final int VALUE_OFFSET = 0;
+
+  private long value;
+
+  public long getValue() {
+    return value;
+  }
+
+  @Override
+  void update(NativeBuffer buffer) {
+    super.update(buffer);
+    value = buffer.getLong(VALUE_OFFSET);
+  }
 }

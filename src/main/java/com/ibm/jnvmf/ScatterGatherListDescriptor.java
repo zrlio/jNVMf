@@ -18,51 +18,60 @@
 package com.ibm.jnvmf;
 
 abstract class ScatterGatherListDescriptor extends NativeData<NativeBuffer> {
-    public final static int SIZE = 16;
-    private final static int IDENTIFIER_OFFSET = 15;
-    private final static int TYPE_BITOFFSET = 4;
 
-    static abstract class SubType extends EEnum<SubType.Value> {
-        SubType() {
-            super(0xf);
-        }
+  public static final int SIZE = 16;
+  private static final int IDENTIFIER_OFFSET = 15;
+  private static final int TYPE_BITOFFSET = 4;
 
-        class Value extends EEnum.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+  abstract static class SubType extends EEnum<SubType.Value> {
+
+    SubType() {
+      super(0xf);
     }
 
-    static class Type extends EEnum<Type.Value> {
-        class Value extends EEnum.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+    class Value extends EEnum.Value {
 
-        public final Value SGL_DATABLOCK = new Value(0x0);
+      Value(int value) {
+        super(value);
+      }
+    }
+  }
 
-        public final Value KEYED_SGL_DATABLOCK = new Value(0x4);
+  static class Type extends EEnum<Type.Value> {
 
-        private Type() {
-            super(0xf);
-        }
+    class Value extends EEnum.Value {
 
-        private final static Type instance = new Type();
-
-        public static Type getInstance() {
-            return instance;
-        }
+      Value(int value) {
+        super(value);
+      }
     }
 
-    ScatterGatherListDescriptor(NativeBuffer buffer) {
-        super(buffer, SIZE);
+    // CHECKSTYLE_OFF: MemberNameCheck
+
+    public final Value SGL_DATABLOCK = new Value(0x0);
+
+    public final Value KEYED_SGL_DATABLOCK = new Value(0x4);
+
+    // CHECKSTYLE_ON: MemberNameCheck
+
+    private Type() {
+      super(0xf);
     }
 
-    protected final void setIdentifier(Type.Value type, SubType.Value subType) {
-        int identifier = subType.toInt();
-        identifier = identifier | (type.toInt() << TYPE_BITOFFSET);
-        getBuffer().put(IDENTIFIER_OFFSET, (byte) identifier);
+    private static final Type instance = new Type();
+
+    public static Type getInstance() {
+      return instance;
     }
+  }
+
+  ScatterGatherListDescriptor(NativeBuffer buffer) {
+    super(buffer, SIZE);
+  }
+
+  protected final void setIdentifier(Type.Value type, SubType.Value subType) {
+    int identifier = subType.toInt();
+    identifier = identifier | (type.toInt() << TYPE_BITOFFSET);
+    getBuffer().put(IDENTIFIER_OFFSET, (byte) identifier);
+  }
 }

@@ -18,41 +18,46 @@
 package com.ibm.jnvmf;
 
 public final class NamespaceIdentifier {
-    static final int SIZE = 4;
 
-    private final int namespaceIdentifier;
+  static final int SIZE = 4;
 
-    /*
-     * NVMe Spec 1.3 - 4.2/6.1.2
-     * Applies to all namespaces attached to the controller
-     */
-    public static NamespaceIdentifier ALL = new NamespaceIdentifier(0xFFFFFFFF);
+  private final int namespaceIdentifier;
 
-    public NamespaceIdentifier(int namespaceIdentifier) {
-        this.namespaceIdentifier = namespaceIdentifier;
+  /*
+   * NVMe Spec 1.3 - 4.2/6.1.2
+   * Applies to all namespaces attached to the controller
+   */
+  public static final NamespaceIdentifier ALL = new NamespaceIdentifier(0xFFFFFFFF);
+
+  public NamespaceIdentifier(int namespaceIdentifier) {
+    this.namespaceIdentifier = namespaceIdentifier;
+  }
+
+  public int toInt() {
+    return namespaceIdentifier;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
     }
 
-    public int toInt() {
-        return namespaceIdentifier;
-    }
+    NamespaceIdentifier that = (NamespaceIdentifier) obj;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    return this.namespaceIdentifier == that.namespaceIdentifier;
+  }
 
-        NamespaceIdentifier that = (NamespaceIdentifier) o;
+  @Override
+  public int hashCode() {
+    return namespaceIdentifier;
+  }
 
-        return namespaceIdentifier == that.namespaceIdentifier;
-    }
-
-    @Override
-    public int hashCode() {
-        return namespaceIdentifier;
-    }
-
-    @Override
-    public String toString() {
-        return Integer.toString(namespaceIdentifier);
-    }
+  @Override
+  public String toString() {
+    return Integer.toString(namespaceIdentifier);
+  }
 }

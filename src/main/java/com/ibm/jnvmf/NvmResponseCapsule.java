@@ -18,7 +18,8 @@
 package com.ibm.jnvmf;
 
 public class NvmResponseCapsule extends ResponseCapsule<NvmCompletionQueueEntry> {
-    public NvmResponseCapsule() {
-        super(new NvmCompletionQueueEntry());
-    }
+
+  public NvmResponseCapsule() {
+    super(new NvmCompletionQueueEntry());
+  }
 }

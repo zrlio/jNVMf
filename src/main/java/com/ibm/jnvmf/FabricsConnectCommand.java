@@ -19,14 +19,15 @@ package com.ibm.jnvmf;
 
 import java.io.IOException;
 
-public class FabricsConnectCommand extends Command<FabricsConnectCommandCapsule, FabricsConnectResponseCapsule> {
+public class FabricsConnectCommand extends
+    Command<FabricsConnectCommandCapsule, FabricsConnectResponseCapsule> {
 
-    FabricsConnectCommand(QueuePair queuePair) throws IOException {
-        super(queuePair, new FabricsConnectCommandCapsule(queuePair.allocateCommandCapsule()));
-    }
+  FabricsConnectCommand(QueuePair queuePair) throws IOException {
+    super(queuePair, new FabricsConnectCommandCapsule(queuePair.allocateCommandCapsule()));
+  }
 
-    @Override
-    public Response<FabricsConnectResponseCapsule> newResponse() {
-        return new Response<>(new FabricsConnectResponseCapsule());
-    }
+  @Override
+  public Response<FabricsConnectResponseCapsule> newResponse() {
+    return new Response<>(new FabricsConnectResponseCapsule());
+  }
 }

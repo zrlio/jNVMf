@@ -17,8 +17,10 @@
 
 package com.ibm.jnvmf;
 
-public abstract class AdminCommandCapsule<Sqe extends AdminSubmissionQeueueEntry> extends CommandCapsule<Sqe> {
-    AdminCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<Sqe> sqeFactory) {
-        super(buffer, sqeFactory);
-    }
+public abstract class AdminCommandCapsule<SqeT extends AdminSubmissionQeueueEntry> extends
+    CommandCapsule<SqeT> {
+
+  AdminCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<SqeT> sqeFactory) {
+    super(buffer, sqeFactory);
+  }
 }

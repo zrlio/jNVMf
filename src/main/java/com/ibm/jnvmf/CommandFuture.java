@@ -18,13 +18,14 @@
 package com.ibm.jnvmf;
 
 public class CommandFuture<C extends CommandCapsule, R extends ResponseCapsule>
-        extends OperationFuture<Command<C, R>, C> {
-    CommandFuture(QueuePair queuePair, Command<C, R> command) {
-        super(queuePair, command);
-    }
+    extends OperationFuture<Command<C, R>, C> {
 
-    @Override
-    C getT() {
-        return getOperation().getCommandCapsule();
-    }
+  CommandFuture(QueuePair queuePair, Command<C, R> command) {
+    super(queuePair, command);
+  }
+
+  @Override
+  C getT() {
+    return getOperation().getCommandCapsule();
+  }
 }

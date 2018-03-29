@@ -18,12 +18,13 @@
 package com.ibm.jnvmf;
 
 public class ResponseFuture<R extends ResponseCapsule> extends OperationFuture<Response<R>, R> {
-    ResponseFuture(QueuePair queuePair, Response<R> response) {
-        super(queuePair, response);
-    }
 
-    @Override
-    R getT() {
-        return getOperation().getResponseCapsule();
-    }
+  ResponseFuture(QueuePair queuePair, Response<R> response) {
+    super(queuePair, response);
+  }
+
+  @Override
+  R getT() {
+    return getOperation().getResponseCapsule();
+  }
 }

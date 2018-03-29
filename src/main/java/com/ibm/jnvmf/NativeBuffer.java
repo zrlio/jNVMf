@@ -24,55 +24,60 @@ import java.nio.ReadOnlyBufferException;
 
 /* Since we cannot extend ByteBuffer we use our own interface */
 public interface NativeBuffer extends Freeable {
-    int position();
 
-    NativeBuffer position(int newPosition);
+  int position();
 
-    int limit();
+  NativeBuffer position(int newPosition);
 
-    NativeBuffer limit(int newLimit);
+  int limit();
 
-    int remaining();
+  NativeBuffer limit(int newLimit);
 
-    int capacity();
+  int remaining();
 
-    NativeBuffer clear();
+  int capacity();
 
-    NativeBuffer flip();
+  NativeBuffer clear();
 
-    NativeBuffer slice();
+  NativeBuffer flip();
 
-    ByteBuffer sliceToByteBuffer();
+  NativeBuffer slice();
 
-    ByteBuffer toByteBuffer();
+  ByteBuffer sliceToByteBuffer();
 
-    ByteOrder order();
+  ByteBuffer toByteBuffer();
 
-    NativeBuffer order(ByteOrder order);
+  ByteOrder order();
 
-    NativeBuffer put(int index, byte value) throws IndexOutOfBoundsException, ReadOnlyBufferException;
+  NativeBuffer order(ByteOrder order);
 
-    NativeBuffer put(byte value) throws BufferOverflowException, ReadOnlyBufferException;
+  NativeBuffer putShort(int index, short value)
+      throws IndexOutOfBoundsException, ReadOnlyBufferException;
 
-    NativeBuffer putShort(int index, short value) throws IndexOutOfBoundsException, ReadOnlyBufferException;
+  NativeBuffer putInt(int index, int value)
+      throws IndexOutOfBoundsException, ReadOnlyBufferException;
 
-    NativeBuffer putInt(int index, int value) throws IndexOutOfBoundsException, ReadOnlyBufferException;
+  NativeBuffer putLong(int index, long value)
+      throws IndexOutOfBoundsException, ReadOnlyBufferException;
 
-    NativeBuffer putLong(int index, long value) throws IndexOutOfBoundsException, ReadOnlyBufferException;
+  NativeBuffer putLong(long value) throws BufferOverflowException, ReadOnlyBufferException;
 
-    NativeBuffer putLong(long value) throws BufferOverflowException, ReadOnlyBufferException;
+  NativeBuffer put(int index, byte value) throws IndexOutOfBoundsException, ReadOnlyBufferException;
 
-    NativeBuffer put(ByteBuffer src) throws BufferOverflowException, IllegalArgumentException, ReadOnlyBufferException;
+  NativeBuffer put(byte value) throws BufferOverflowException, ReadOnlyBufferException;
 
-    NativeBuffer put(byte[] src) throws BufferOverflowException, ReadOnlyBufferException;
+  NativeBuffer put(ByteBuffer src)
+      throws BufferOverflowException, IllegalArgumentException, ReadOnlyBufferException;
 
-    byte get(int index) throws IndexOutOfBoundsException;
+  NativeBuffer put(byte[] src) throws BufferOverflowException, ReadOnlyBufferException;
 
-    short getShort(int index) throws IndexOutOfBoundsException;
+  byte get(int index) throws IndexOutOfBoundsException;
 
-    int getInt(int index) throws IndexOutOfBoundsException;
+  short getShort(int index) throws IndexOutOfBoundsException;
 
-    long getLong(int index) throws IndexOutOfBoundsException;
+  int getInt(int index) throws IndexOutOfBoundsException;
 
-    long getAddress();
+  long getLong(int index) throws IndexOutOfBoundsException;
+
+  long getAddress();
 }

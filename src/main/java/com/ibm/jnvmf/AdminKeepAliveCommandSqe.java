@@ -17,13 +17,15 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsPropertyGetCommandSQE extends FabricsPropertyCommandSQE {
-    FabricsPropertyGetCommandSQE(NativeBuffer buffer) {
-        super(buffer);
-    }
+public class AdminKeepAliveCommandSqe extends AdminSubmissionQeueueEntry {
 
-    @Override
-    FabricsCommandType getCommandType() {
-        return FabricsCommandType.PROPERTY_GET;
-    }
+  AdminKeepAliveCommandSqe(NativeBuffer buffer) {
+    super(buffer);
+  }
+
+  @Override
+  void initialize() {
+    super.initialize();
+    setOpcode(AdminCommandOpcode.KEEP_ALIVE);
+  }
 }

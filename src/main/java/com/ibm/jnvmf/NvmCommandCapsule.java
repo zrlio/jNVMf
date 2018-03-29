@@ -17,9 +17,11 @@
 
 package com.ibm.jnvmf;
 
-public abstract class NvmCommandCapsule<Sqe extends NvmSubmissionQueueEntry> extends CommandCapsule<Sqe> {
-    NvmCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<Sqe> sqeFactory,
-                      int additionalSGLs, int incapsuleDataOffset, int incapsuleDataSize) {
-        super(buffer, sqeFactory, additionalSGLs, incapsuleDataOffset, incapsuleDataSize);
-    }
+public abstract class NvmCommandCapsule<SqeT extends NvmSubmissionQueueEntry> extends
+    CommandCapsule<SqeT> {
+
+  NvmCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<SqeT> sqeFactory,
+      int additionalSgls, int incapsuleDataOffset, int incapsuleDataSize) {
+    super(buffer, sqeFactory, additionalSgls, incapsuleDataOffset, incapsuleDataSize);
+  }
 }

@@ -18,18 +18,20 @@
 package com.ibm.jnvmf;
 
 public class NvmCommandOpcode extends CommandOpcode {
-    /*
-     * NVMe Spec 1.3a - 6
-     */
+  /*
+   * NVMe Spec 1.3a - 6
+   */
 
-    final static NvmCommandOpcode WRITE = new NvmCommandOpcode(false, 0, DataTransfer.HOST_TO_CONTROLLER);
-    final static NvmCommandOpcode READ = new NvmCommandOpcode(false, 0, DataTransfer.CONTROLLER_TO_HOST);
+  static final NvmCommandOpcode WRITE = new NvmCommandOpcode(false, 0,
+      DataTransfer.HOST_TO_CONTROLLER);
+  static final NvmCommandOpcode READ = new NvmCommandOpcode(false, 0,
+      DataTransfer.CONTROLLER_TO_HOST);
 
-    protected NvmCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
-        super(generic, function, dataTransfer, false);
-    }
+  protected NvmCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
+    super(generic, function, dataTransfer, false);
+  }
 
-    public byte toByte() {
-        return super.toByte();
-    }
+  public byte toByte() {
+    return super.toByte();
+  }
 }

@@ -17,8 +17,10 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsPropertyGetResponseCapsule extends ResponseCapsule<FabricsPropertyGetResponseCQE> {
-    public FabricsPropertyGetResponseCapsule() {
-        super(new FabricsPropertyGetResponseCQE());
-    }
+public class FabricsPropertyGetResponseCapsule extends
+    ResponseCapsule<FabricsPropertyGetResponseCqe> {
+
+  public FabricsPropertyGetResponseCapsule() {
+    super(new FabricsPropertyGetResponseCqe());
+  }
 }

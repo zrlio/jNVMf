@@ -18,16 +18,17 @@
 package com.ibm.jnvmf;
 
 public class NvmCompletionQueueEntry extends CompletionQueueEntry {
-    private StatusCode.Value statusCodeValue;
 
-    @Override
-    public final StatusCode.Value getStatusCode() {
-        return statusCodeValue;
-    }
+  private StatusCode.Value statusCodeValue;
 
-    @Override
-    void update(NativeBuffer buffer) {
-        super.update(buffer);
-        statusCodeValue = getStatusCodeType().NvmValueOf(getStatusCodeRaw(buffer));
-    }
+  @Override
+  public final StatusCode.Value getStatusCode() {
+    return statusCodeValue;
+  }
+
+  @Override
+  void update(NativeBuffer buffer) {
+    super.update(buffer);
+    statusCodeValue = getStatusCodeType().nvmValueOf(getStatusCodeRaw(buffer));
+  }
 }

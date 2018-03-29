@@ -17,12 +17,15 @@
 
 package com.ibm.jnvmf;
 
-public abstract class AdminIdentifyCommandCapsule extends AdminCommandCapsule<AdminIdentifyCommandSQE> {
-    private final static SubmissionQueueEntryFactory<AdminIdentifyCommandSQE> sqeFactory =
-            buffer -> new AdminIdentifyCommandSQE(buffer);
+public abstract class AdminIdentifyCommandCapsule extends
+    AdminCommandCapsule<AdminIdentifyCommandSqe> {
 
-    AdminIdentifyCommandCapsule(KeyedNativeBuffer buffer, AdminIdentifyCommandReturnType.Value returnType) {
-        super(buffer, sqeFactory);
-        getSubmissionQueueEntry().setReturnType(returnType);
-    }
+  private static final SubmissionQueueEntryFactory<AdminIdentifyCommandSqe> sqeFactory =
+      buffer -> new AdminIdentifyCommandSqe(buffer);
+
+  AdminIdentifyCommandCapsule(KeyedNativeBuffer buffer,
+      AdminIdentifyCommandReturnType.Value returnType) {
+    super(buffer, sqeFactory);
+    getSubmissionQueueEntry().setReturnType(returnType);
+  }
 }

@@ -17,35 +17,34 @@
 
 package com.ibm.jnvmf;
 
-
 public abstract class FabricsSubmissionQueueEntry extends SubmissionQueueEntry {
-    /*
-     * NVMf Spec 1.0 - 2.1
-     *
-     *  04      Fabrics CommandCapsule Type
-     *  02:03   CommandCapsule Identifier (CID) - unique identifier for cmd together with submission queue identifier
-     *  01      Reserved
-     *  0       CommandType (OPC)
-     *
-     */
+  /*
+   * NVMf Spec 1.0 - 2.1
+   *
+   *  04      Fabrics CommandCapsule Type
+   *  02:03   CommandCapsule Identifier (CID) - unique identifier together with SQ identifier
+   *  01      Reserved
+   *  0       CommandType (OPC)
+   *
+   */
 
-    private final static int FABRIC_COMMAND_TYPE_OFFSET = 4;
+  private static final int FABRIC_COMMAND_TYPE_OFFSET = 4;
 
-    FabricsSubmissionQueueEntry(NativeBuffer buffer) {
-        super(buffer);
-    }
+  FabricsSubmissionQueueEntry(NativeBuffer buffer) {
+    super(buffer);
+  }
 
-    private final void setFabricsCommandType(FabricsCommandType commandType) {
-        getBuffer().put(FABRIC_COMMAND_TYPE_OFFSET, commandType.toByte());
-    }
+  private final void setFabricsCommandType(FabricsCommandType commandType) {
+    getBuffer().put(FABRIC_COMMAND_TYPE_OFFSET, commandType.toByte());
+  }
 
-    abstract FabricsCommandType getCommandType();
+  abstract FabricsCommandType getCommandType();
 
 
-    @Override
-    void initialize() {
-        super.initialize();
-        setOpcode(FabricsCommandOpcode.FABRIC);
-        setFabricsCommandType(getCommandType());
-    }
+  @Override
+  void initialize() {
+    super.initialize();
+    setOpcode(FabricsCommandOpcode.FABRIC);
+    setFabricsCommandType(getCommandType());
+  }
 }

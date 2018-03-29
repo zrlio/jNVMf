@@ -18,100 +18,113 @@
 package com.ibm.jnvmf;
 
 public class ControllerConfiguration {
-    /*
-     * NVMf Spec 1.0 - 3.5.1
-     */
-    private final static int OFFSET = 0x14;
-    public static Property PROPERTY =
-            new Property(Property.Size.getInstance().FOUR_BYTES, OFFSET);
 
-    private final static int ENABLE_BITOFFSET = 0;
-    private final static int MEMORY_PAGE_SIZE_BITOFFSET_START = 11;
-    private final static int MEMORY_PAGE_SIZE_BITOFFSET_END = 13;
-    private final static int SHUTDOWN_NOTIFICATION_BITOFFSET_START = 14;
-    private final static int SHUTDOWN_NOTIFICATION_BITOFFSET_END = 15;
-    private final static int IO_SQE_SIZE_BITOFFSET_START = 16;
-    private final static int IO_SQE_SIZE_BITOFFSET_END = 19;
-    private final static int IO_CQE_SIZE_BITOFFSET_START = 20;
-    private final static int IO_CQE_SIZE_BITOFFSET_END = 23;
+  /*
+   * NVMf Spec 1.0 - 3.5.1
+   */
+  private static final int OFFSET = 0x14;
+  public static Property PROPERTY =
+      new Property(Property.Size.getInstance().FOUR_BYTES, OFFSET);
 
-    private int value;
+  private static final int ENABLE_BITOFFSET = 0;
+  private static final int MEMORY_PAGE_SIZE_BITOFFSET_START = 11;
+  private static final int MEMORY_PAGE_SIZE_BITOFFSET_END = 13;
+  private static final int SHUTDOWN_NOTIFICATION_BITOFFSET_START = 14;
+  private static final int SHUTDOWN_NOTIFICATION_BITOFFSET_END = 15;
+  private static final int IO_SQE_SIZE_BITOFFSET_START = 16;
+  private static final int IO_SQE_SIZE_BITOFFSET_END = 19;
+  private static final int IO_CQE_SIZE_BITOFFSET_START = 20;
+  private static final int IO_CQE_SIZE_BITOFFSET_END = 23;
 
-    ControllerConfiguration() {
+  private int value;
+
+  ControllerConfiguration() {
+  }
+
+  void update(int value) {
+    this.value = value;
+  }
+
+  public boolean getEnable() {
+    return BitUtil.getBit(value, 0);
+  }
+
+  public void setEnable(boolean enable) {
+    value = BitUtil.setBitTo(value, ENABLE_BITOFFSET, enable);
+  }
+
+  //TODO
+  //public IOCommandSetSelected getIOCommandSetSelected() {
+  //  return
+  //}
+
+  public MemoryPageUnitSize getMemoryPageSize() {
+    /* Minimum host memory size is 4KB */
+    int mps = BitUtil
+        .getBits(value, MEMORY_PAGE_SIZE_BITOFFSET_START, MEMORY_PAGE_SIZE_BITOFFSET_END);
+    return new MemoryPageUnitSize(new Pow2Size(mps));
+  }
+
+  public static class ShutdownNotification extends EEnum<ShutdownNotification.Value> {
+
+    public class Value extends EEnum.Value {
+
+      Value(int value) {
+        super(value);
+      }
     }
 
-    void update(int value) {
-        this.value = value;
+    // CHECKSTYLE_OFF: MemberNameCheck
+
+    public final Value NO_NOTIFICATION = new Value(0x0);
+    public final Value NORMAL_SHUTDOWN = new Value(0x1);
+    public final Value ABRUPT_SHUTDOWN = new Value(0x2);
+
+    // CHECKSTYLE_ON: MemberNameCheck
+
+    private ShutdownNotification() {
+      super(0x2);
     }
 
-    public boolean getEnable() {
-        return BitUtil.getBit(value, 0);
+    private static final ShutdownNotification instance = new ShutdownNotification();
+
+    public static ShutdownNotification getInstance() {
+      return instance;
     }
+  }
 
-    public void setEnable(boolean enable) {
-        value = BitUtil.setBitTo(value, ENABLE_BITOFFSET, enable);
-    }
+  public ShutdownNotification.Value getShutdownNotification() {
+    return ShutdownNotification.getInstance()
+        .valueOf(BitUtil.getBits(value, SHUTDOWN_NOTIFICATION_BITOFFSET_START,
+            SHUTDOWN_NOTIFICATION_BITOFFSET_END));
+  }
 
-    // TODO
-//	public IOCommandSetSelected getIOCommandSetSelected() {
-//		return
-//	}
+  public void setShutdownNotification(ShutdownNotification.Value shutdownNotification) {
+    value = BitUtil.setBitsTo(value, SHUTDOWN_NOTIFICATION_BITOFFSET_START,
+        SHUTDOWN_NOTIFICATION_BITOFFSET_END, shutdownNotification.toInt());
+  }
 
-    public MemoryPageUnitSize getMemoryPageSize() {
-        /* Minimum host memory size is 4KB */
-        int mps = BitUtil.getBits(value, MEMORY_PAGE_SIZE_BITOFFSET_START, MEMORY_PAGE_SIZE_BITOFFSET_END);
-        return new MemoryPageUnitSize(new Pow2Size(mps));
-    }
+  public QueueEntrySize getIoSubmissionQueueEntrySize() {
+    return new QueueEntrySize(
+        BitUtil.getBits(value, IO_SQE_SIZE_BITOFFSET_START, IO_SQE_SIZE_BITOFFSET_END));
+  }
 
-    public static class ShutdownNotification extends EEnum<ShutdownNotification.Value> {
-        public class Value extends EEnum.Value {
-            Value(int value) {
-                super(value);
-            }
-        }
+  public void setIoSubmissionQueueEntrySize(QueueEntrySize size) {
+    value = BitUtil
+        .setBitsTo(value, IO_SQE_SIZE_BITOFFSET_START, IO_SQE_SIZE_BITOFFSET_END, size.value());
+  }
 
-        public Value NO_NOTIFICATION = new Value(0x0);
-        public Value NORMAL_SHUTDOWN = new Value(0x1);
-        public Value ABRUPT_SHUTDOWN = new Value(0x2);
+  public QueueEntrySize getIoCompletionQueueEntrySize() {
+    return new QueueEntrySize(
+        BitUtil.getBits(value, IO_CQE_SIZE_BITOFFSET_START, IO_CQE_SIZE_BITOFFSET_END));
+  }
 
-        private ShutdownNotification() {
-            super(0x2);
-        }
+  public void setIoCompletionQueueEntrySize(QueueEntrySize size) {
+    value = BitUtil
+        .setBitsTo(value, IO_CQE_SIZE_BITOFFSET_START, IO_CQE_SIZE_BITOFFSET_END, size.value());
+  }
 
-        private final static ShutdownNotification instance = new ShutdownNotification();
-
-        public static ShutdownNotification getInstance() {
-            return instance;
-        }
-    }
-
-	public ShutdownNotification.Value getShutdownNotification() {
-        return ShutdownNotification.getInstance().valueOf(BitUtil.getBits(value, SHUTDOWN_NOTIFICATION_BITOFFSET_START,
-                SHUTDOWN_NOTIFICATION_BITOFFSET_END));
-	}
-
-	public void setShutdownNotification(ShutdownNotification.Value shutdownNotification) {
-        value = BitUtil.setBitsTo(value, SHUTDOWN_NOTIFICATION_BITOFFSET_START,
-                SHUTDOWN_NOTIFICATION_BITOFFSET_END, shutdownNotification.toInt());
-    }
-
-    public QueueEntrySize getIOSubmissionQueueEntrySize() {
-        return new QueueEntrySize(BitUtil.getBits(value, IO_SQE_SIZE_BITOFFSET_START, IO_SQE_SIZE_BITOFFSET_END));
-    }
-
-    public void setIOSubmissionQueueEntrySize(QueueEntrySize size) {
-        value = BitUtil.setBitsTo(value, IO_SQE_SIZE_BITOFFSET_START, IO_SQE_SIZE_BITOFFSET_END, size.value());
-    }
-
-    public QueueEntrySize getIOCompletionQueueEntrySize() {
-        return new QueueEntrySize(BitUtil.getBits(value, IO_CQE_SIZE_BITOFFSET_START, IO_CQE_SIZE_BITOFFSET_END));
-    }
-
-    public void setIOCompletionQueueEntrySize(QueueEntrySize size) {
-        value = BitUtil.setBitsTo(value, IO_CQE_SIZE_BITOFFSET_START, IO_CQE_SIZE_BITOFFSET_END, size.value());
-    }
-
-    public int toInt() {
-        return value;
-    }
+  int toInt() {
+    return value;
+  }
 }

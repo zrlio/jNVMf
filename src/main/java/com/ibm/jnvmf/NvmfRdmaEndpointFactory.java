@@ -24,14 +24,14 @@ import java.io.IOException;
 
 class NvmfRdmaEndpointFactory implements RdmaEndpointFactory<NvmfRdmaEndpoint> {
 
-    private final NvmfRdmaEndpointGroup group;
+  private final NvmfRdmaEndpointGroup group;
 
-    NvmfRdmaEndpointFactory(NvmfRdmaEndpointGroup group) {
-        this.group = group;
-    }
+  NvmfRdmaEndpointFactory(NvmfRdmaEndpointGroup group) {
+    this.group = group;
+  }
 
-    public NvmfRdmaEndpoint createEndpoint(RdmaCmId id, boolean serverSide) throws IOException {
-        NvmfRdmaEndpoint endpoint = new NvmfRdmaEndpoint(group, id);
-        return endpoint;
-    }
+  public NvmfRdmaEndpoint createEndpoint(RdmaCmId id, boolean serverSide) throws IOException {
+    NvmfRdmaEndpoint endpoint = new NvmfRdmaEndpoint(group, id);
+    return endpoint;
+  }
 }

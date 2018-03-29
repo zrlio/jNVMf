@@ -17,11 +17,12 @@
 
 package com.ibm.jnvmf;
 
-public class AdminKeepAliveCommandCapsule extends AdminCommandCapsule<AdminKeepAliveCommandSQE> {
-    private static final SubmissionQueueEntryFactory<AdminKeepAliveCommandSQE> sqeFactory =
-            buffer -> new AdminKeepAliveCommandSQE(buffer);
+public class AdminKeepAliveCommandCapsule extends AdminCommandCapsule<AdminKeepAliveCommandSqe> {
 
-    AdminKeepAliveCommandCapsule(KeyedNativeBuffer buffer) {
-        super(buffer, sqeFactory);
-    }
+  private static final SubmissionQueueEntryFactory<AdminKeepAliveCommandSqe> sqeFactory =
+      buffer -> new AdminKeepAliveCommandSqe(buffer);
+
+  AdminKeepAliveCommandCapsule(KeyedNativeBuffer buffer) {
+    super(buffer, sqeFactory);
+  }
 }

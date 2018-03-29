@@ -17,31 +17,36 @@
 
 package com.ibm.jnvmf;
 
-public final class QueueID {
-    private final short id;
+public final class QueueId {
 
-    public final static QueueID ADMIN = new QueueID((short) 0);
+  private final short id;
 
-    public QueueID(short id) {
-        this.id = id;
+  public static final QueueId ADMIN = new QueueId((short) 0);
+
+  public QueueId(short id) {
+    this.id = id;
+  }
+
+  public short toShort() {
+    return id;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
     }
 
-    public short toShort() {
-        return id;
-    }
+    QueueId queueId = (QueueId) obj;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    return id == queueId.id;
+  }
 
-        QueueID queueID = (QueueID) o;
-
-        return id == queueID.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) id;
-    }
+  @Override
+  public int hashCode() {
+    return (int) id;
+  }
 }

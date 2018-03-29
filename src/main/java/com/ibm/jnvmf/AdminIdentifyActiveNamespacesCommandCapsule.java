@@ -18,13 +18,14 @@
 package com.ibm.jnvmf;
 
 public class AdminIdentifyActiveNamespacesCommandCapsule extends AdminIdentifyCommandCapsule {
-    AdminIdentifyActiveNamespacesCommandCapsule(KeyedNativeBuffer buffer) {
-        super(buffer, AdminIdentifyCommandReturnType.getInstance().ACTIVE_NAMESPACE_IDS);
-    }
 
-    public void setSGLDescriptor(NamespaceIdentifierList data) {
-        KeyedSGLDataBlockDescriptor keyedSGLDataBlockDescriptor =
-                getSubmissionQueueEntry().getKeyedSGLDataBlockDescriptor();
-        keyedSGLDataBlockDescriptor.set(data.getBuffer());
-    }
+  AdminIdentifyActiveNamespacesCommandCapsule(KeyedNativeBuffer buffer) {
+    super(buffer, AdminIdentifyCommandReturnType.getInstance().ACTIVE_NAMESPACE_IDS);
+  }
+
+  public void setSglDescriptor(NamespaceIdentifierList data) {
+    KeyedSglDataBlockDescriptor keyedSglDataBlockDescriptor =
+        getSubmissionQueueEntry().getKeyedSglDataBlockDescriptor();
+    keyedSglDataBlockDescriptor.set(data.getBuffer());
+  }
 }

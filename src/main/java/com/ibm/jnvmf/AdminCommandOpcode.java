@@ -18,21 +18,21 @@
 package com.ibm.jnvmf;
 
 class AdminCommandOpcode extends CommandOpcode {
-    /*
-    * NVMe Spec 1.3a - 5
-    */
+  /*
+   * NVMe Spec 1.3a - 5
+   */
 
-    final static AdminCommandOpcode IDENTIFY =
-            new AdminCommandOpcode(false, 1, DataTransfer.CONTROLLER_TO_HOST);
-    final static AdminCommandOpcode KEEP_ALIVE =
-            new AdminCommandOpcode(false, 6, DataTransfer.NO);
+  static final AdminCommandOpcode IDENTIFY =
+      new AdminCommandOpcode(false, 1, DataTransfer.CONTROLLER_TO_HOST);
+  static final AdminCommandOpcode KEEP_ALIVE =
+      new AdminCommandOpcode(false, 6, DataTransfer.NO);
 
 
-    protected AdminCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
-        super(generic, function, dataTransfer, true);
-    }
+  protected AdminCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
+    super(generic, function, dataTransfer, true);
+  }
 
-    public byte toByte() {
-        return super.toByte();
-    }
+  public byte toByte() {
+    return super.toByte();
+  }
 }

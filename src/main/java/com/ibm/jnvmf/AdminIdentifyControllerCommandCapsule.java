@@ -19,13 +19,13 @@ package com.ibm.jnvmf;
 
 public class AdminIdentifyControllerCommandCapsule extends AdminIdentifyCommandCapsule {
 
-    AdminIdentifyControllerCommandCapsule(KeyedNativeBuffer buffer) {
-        super(buffer, AdminIdentifyCommandReturnType.getInstance().CONTROLLER);
-    }
+  AdminIdentifyControllerCommandCapsule(KeyedNativeBuffer buffer) {
+    super(buffer, AdminIdentifyCommandReturnType.getInstance().CONTROLLER);
+  }
 
-    public void setSGLDescriptor(IdentifyControllerData data) {
-        KeyedSGLDataBlockDescriptor keyedSGLDataBlockDescriptor =
-                getSubmissionQueueEntry().getKeyedSGLDataBlockDescriptor();
-        keyedSGLDataBlockDescriptor.set(data.getBuffer());
-    }
+  public void setSglDescriptor(IdentifyControllerData data) {
+    KeyedSglDataBlockDescriptor keyedSglDataBlockDescriptor =
+        getSubmissionQueueEntry().getKeyedSglDataBlockDescriptor();
+    keyedSglDataBlockDescriptor.set(data.getBuffer());
+  }
 }

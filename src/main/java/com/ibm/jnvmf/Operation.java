@@ -18,13 +18,14 @@
 package com.ibm.jnvmf;
 
 public class Operation {
-    private OperationCallback callback;
 
-    final OperationCallback getCallback() {
-        return callback;
-    }
+  private OperationCallback callback;
 
-    public final void setCallback(OperationCallback callback) {
-        this.callback = callback;
-    }
+  final OperationCallback getCallback() {
+    return callback;
+  }
+
+  public final void setCallback(OperationCallback callback) {
+    this.callback = callback;
+  }
 }

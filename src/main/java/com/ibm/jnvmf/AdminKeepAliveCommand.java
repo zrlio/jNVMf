@@ -20,7 +20,8 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public class AdminKeepAliveCommand extends AdminCommand<AdminKeepAliveCommandCapsule> {
-    AdminKeepAliveCommand(AdminQueuePair queuePair) throws IOException {
-        super(queuePair, new AdminKeepAliveCommandCapsule(queuePair.allocateCommandCapsule()));
-    }
+
+  AdminKeepAliveCommand(AdminQueuePair queuePair) throws IOException {
+    super(queuePair, new AdminKeepAliveCommandCapsule(queuePair.allocateCommandCapsule()));
+  }
 }

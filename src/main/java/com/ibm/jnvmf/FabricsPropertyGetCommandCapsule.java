@@ -17,11 +17,12 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsPropertyGetCommandCapsule extends CommandCapsule<FabricsPropertyGetCommandSQE> {
-    private static final SubmissionQueueEntryFactory<FabricsPropertyGetCommandSQE> sqeFactory =
-            buffer -> new FabricsPropertyGetCommandSQE(buffer);
+public class FabricsPropertyGetCommandCapsule extends CommandCapsule<FabricsPropertyGetCommandSqe> {
 
-    FabricsPropertyGetCommandCapsule(KeyedNativeBuffer buffer) {
-        super(buffer, sqeFactory);
-    }
+  private static final SubmissionQueueEntryFactory<FabricsPropertyGetCommandSqe> sqeFactory =
+      buffer -> new FabricsPropertyGetCommandSqe(buffer);
+
+  FabricsPropertyGetCommandCapsule(KeyedNativeBuffer buffer) {
+    super(buffer, sqeFactory);
+  }
 }

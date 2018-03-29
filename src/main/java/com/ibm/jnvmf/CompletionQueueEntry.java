@@ -20,86 +20,86 @@ package com.ibm.jnvmf;
 import java.nio.ByteOrder;
 
 abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
-    /*
-     * NVMf Spec 1.0 - 2.2 and NVMe Spec 1.3a - 4.6.1
-     *
-     * 07:00 Command specific
-     * 09:08 SQ head pointer
-     * 11:10 Reserved
-     * 13:12 Command Identifier
-     * 15:14 Status:
-     *  31 Do not retry
-     *  30 More
-     *  28:29 Reserved
-     *  25:27 Status code type
-     *  17:24 Status code
-     *
-     */
+  /*
+   * NVMf Spec 1.0 - 2.2 and NVMe Spec 1.3a - 4.6.1
+   *
+   * 07:00 Command specific
+   * 09:08 SQ head pointer
+   * 11:10 Reserved
+   * 13:12 Command Identifier
+   * 15:14 Status:
+   *  31 Do not retry
+   *  30 More
+   *  28:29 Reserved
+   *  25:27 Status code type
+   *  17:24 Status code
+   *
+   */
 
-    public final static int SIZE = 16;
+  public static final int SIZE = 16;
 
-    private final static int SUBMISSION_QUEUE_HEAD_POINTER_OFFSET = 8;
-    private short submissionQueueHeadPointer;
+  private static final int SUBMISSION_QUEUE_HEAD_POINTER_OFFSET = 8;
+  private short submissionQueueHeadPointer;
 
-    private final static int COMMAND_IDENTIFIER_OFFSET = 12;
-    private short commandIdentifier;
+  private static final int COMMAND_IDENTIFIER_OFFSET = 12;
+  private short commandIdentifier;
 
-    private static final int STATUS_CODE_OFFSET = 14;
+  private static final int STATUS_CODE_OFFSET = 14;
 
-    private static final int STATUS_CODE_TYPE_OFFSET = 15;
-    private StatusCodeType.Value statusCodeType;
+  private static final int STATUS_CODE_TYPE_OFFSET = 15;
+  private StatusCodeType.Value statusCodeType;
 
-    private static final int MORE_OFFSET = 15;
-    private static final int MORE_BITOFFSET = 6;
-    private boolean more;
+  private static final int MORE_OFFSET = 15;
+  private static final int MORE_BITOFFSET = 6;
+  private boolean more;
 
-    private static final int DO_NOT_RETRY_OFFSET = 15;
-    private static final int DO_NOT_RETRY_BITOFFSET = 7;
-    private boolean doNotRetry;
+  private static final int DO_NOT_RETRY_OFFSET = 15;
+  private static final int DO_NOT_RETRY_BITOFFSET = 7;
+  private boolean doNotRetry;
 
 
-    public final short getSubmissionQueueHeadPointer() {
-        return submissionQueueHeadPointer;
-    }
+  public final short getSubmissionQueueHeadPointer() {
+    return submissionQueueHeadPointer;
+  }
 
-    public final short getCommandIdentifier() {
-        return commandIdentifier;
-    }
+  public final short getCommandIdentifier() {
+    return commandIdentifier;
+  }
 
-    int getStatusCodeRaw(NativeBuffer buffer) {
-        int raw = buffer.getShort(STATUS_CODE_OFFSET);
-        return BitUtil.getBits(raw, 1, 8);
-    }
+  static short getCommandIdentifier(NativeBuffer buffer) {
+    return buffer.getShort(COMMAND_IDENTIFIER_OFFSET);
+  }
 
-    public abstract StatusCode.Value getStatusCode();
+  int getStatusCodeRaw(NativeBuffer buffer) {
+    int raw = buffer.getShort(STATUS_CODE_OFFSET);
+    return BitUtil.getBits(raw, 1, 8);
+  }
 
-    public final StatusCodeType.Value getStatusCodeType() {
-        return statusCodeType;
-    }
+  public abstract StatusCode.Value getStatusCode();
 
-    public final boolean getMore() {
-        return more;
-    }
+  public final StatusCodeType.Value getStatusCodeType() {
+    return statusCodeType;
+  }
 
-    public final boolean getDoNotRetry() {
-        return doNotRetry;
-    }
+  public final boolean getMore() {
+    return more;
+  }
 
-    static short getCommandIdentifier(NativeBuffer buffer) {
-        return buffer.getShort(COMMAND_IDENTIFIER_OFFSET);
-    }
+  public final boolean getDoNotRetry() {
+    return doNotRetry;
+  }
 
-    @Override
-    void update(NativeBuffer buffer) {
-        /* According to NVMf Spec 1.0 - 1.3 conventions */
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        submissionQueueHeadPointer = buffer.getShort(SUBMISSION_QUEUE_HEAD_POINTER_OFFSET);
-        commandIdentifier = getCommandIdentifier(buffer);
-        int b1 = buffer.get(STATUS_CODE_TYPE_OFFSET);
-        statusCodeType = StatusCodeType.getInstance().valueOf(BitUtil.getBits(b1, 1, 3));
-        assert (MORE_OFFSET == STATUS_CODE_TYPE_OFFSET);
-        more = BitUtil.getBit(b1, MORE_BITOFFSET);
-        assert (DO_NOT_RETRY_OFFSET == STATUS_CODE_TYPE_OFFSET);
-        doNotRetry = BitUtil.getBit(b1, DO_NOT_RETRY_BITOFFSET);
-    }
+  @Override
+  void update(NativeBuffer buffer) {
+    /* According to NVMf Spec 1.0 - 1.3 conventions */
+    buffer.order(ByteOrder.LITTLE_ENDIAN);
+    submissionQueueHeadPointer = buffer.getShort(SUBMISSION_QUEUE_HEAD_POINTER_OFFSET);
+    commandIdentifier = getCommandIdentifier(buffer);
+    int b1 = buffer.get(STATUS_CODE_TYPE_OFFSET);
+    statusCodeType = StatusCodeType.getInstance().valueOf(BitUtil.getBits(b1, 1, 3));
+    assert (MORE_OFFSET == STATUS_CODE_TYPE_OFFSET);
+    more = BitUtil.getBit(b1, MORE_BITOFFSET);
+    assert (DO_NOT_RETRY_OFFSET == STATUS_CODE_TYPE_OFFSET);
+    doNotRetry = BitUtil.getBit(b1, DO_NOT_RETRY_BITOFFSET);
+  }
 }

@@ -18,7 +18,8 @@
 package com.ibm.jnvmf;
 
 public class AdminResponseCapsule extends ResponseCapsule<AdminCompletionQueueEntry> {
-    AdminResponseCapsule() {
-        super(new AdminCompletionQueueEntry());
-    }
+
+  AdminResponseCapsule() {
+    super(new AdminCompletionQueueEntry());
+  }
 }

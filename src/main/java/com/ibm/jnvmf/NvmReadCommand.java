@@ -19,11 +19,11 @@ package com.ibm.jnvmf;
 
 import java.io.IOException;
 
-public class NvmReadCommand extends NvmIOCommand<NvmReadCommandCapsule> {
+public class NvmReadCommand extends NvmIoCommand<NvmReadCommandCapsule> {
 
-    public NvmReadCommand(IOQueuePair queuePair) throws IOException {
-        /* read does not have any incapsule data */
-        super(queuePair, new NvmReadCommandCapsule(queuePair.allocateCommandCapsule(),
-                queuePair.getMaximumAdditionalSGLs()));
-    }
+  public NvmReadCommand(IoQueuePair queuePair) throws IOException {
+    /* read does not have any incapsule data */
+    super(queuePair, new NvmReadCommandCapsule(queuePair.allocateCommandCapsule(),
+        queuePair.getMaximumAdditionalSgls()));
+  }
 }

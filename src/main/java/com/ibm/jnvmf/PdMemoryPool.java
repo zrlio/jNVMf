@@ -26,210 +26,208 @@ import java.nio.ByteOrder;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class PdMemoryPool implements KeyedNativeBufferPool, Freeable {
-    private final IbvPd protectionDomain;
-    private final MemoryAllocator allocator;
-    private final ByteOrder endianness;
-    private final int elementSize;
-    private final int numElementsRegion;
-    private final MemoryRegion[] regions;
-    private int numFreeRegions;
+class PdMemoryPool implements KeyedNativeBufferPool, Freeable {
 
-    private final Queue<KeyedNativeBuffer> freeElements;
+  private final IbvPd protectionDomain;
+  private final MemoryAllocator allocator;
+  private final ByteOrder endianness;
+  private final int elementSize;
+  private final int numElementsRegion;
+  private final MemoryRegion[] regions;
+  private int numFreeRegions;
 
-    private class MemoryRegion {
-        private final NativeBuffer buffer;
-        private final IbvMr mr;
+  private final Queue<KeyedNativeBuffer> freeElements;
 
-        private MemoryRegion(NativeBuffer buffer) throws IOException {
-            this.buffer = buffer;
-            /* TODO: allow to create memory pools for different access types */
-            int access = IbvMr.IBV_ACCESS_LOCAL_WRITE
-                    | IbvMr.IBV_ACCESS_REMOTE_READ
-                    | IbvMr.IBV_ACCESS_REMOTE_WRITE;
-            this.mr = protectionDomain.regMr(buffer.toByteBuffer(), access).execute().free().getMr();
-            ;
-        }
+  private class MemoryRegion {
 
-        private void free() throws IOException {
-            mr.deregMr().execute().free();
-            buffer.free();
-        }
+    private final NativeBuffer buffer;
+    private final IbvMr mr;
 
-        private PdMemoryPool getOuter() {
-            return PdMemoryPool.this;
-        }
+    private MemoryRegion(NativeBuffer buffer) throws IOException {
+      this.buffer = buffer;
+      /* TODO: allow to create memory pools for different access types */
+      int access = IbvMr.IBV_ACCESS_LOCAL_WRITE
+          | IbvMr.IBV_ACCESS_REMOTE_READ
+          | IbvMr.IBV_ACCESS_REMOTE_WRITE;
+      this.mr = protectionDomain.regMr(buffer.toByteBuffer(), access).execute().free().getMr();
+      ;
     }
 
-    private static class Element extends NativeByteBuffer implements KeyedNativeBuffer {
-        private final MemoryRegion region;
-        private boolean valid;
-
-        private Element(ByteBuffer buffer, MemoryRegion region) {
-            super(buffer);
-            this.region = region;
-            this.valid = true;
-        }
-
-        private Element(Element e) {
-            this(e.toByteBuffer(), e.region);
-            clear();
-        }
-
-        @Override
-        public int getRemoteKey() {
-            return region.mr.getRkey();
-        }
-
-        @Override
-        public int getLocalKey() {
-            return region.mr.getLkey();
-        }
-
-        @Override
-        public void free() {
-            if (!isValid()) {
-                throw new IllegalStateException("double free buffer");
-            }
-            valid = false;
-            region.getOuter().free(this);
-        }
-
-        @Override
-        public boolean isValid() {
-            return valid;
-        }
-
-        @Override
-        protected KeyedNativeBuffer construct(ByteBuffer buffer) {
-            return new ChildElement(this, buffer);
-        }
+    private void free() throws IOException {
+      mr.deregMr().execute().free();
+      buffer.free();
     }
 
-    private static class ChildElement extends NativeByteBuffer implements KeyedNativeBuffer {
-        private final Element parent;
+    private PdMemoryPool getOuter() {
+      return PdMemoryPool.this;
+    }
+  }
 
-        ChildElement(Element parent, ByteBuffer buffer) {
-            super(buffer);
-            this.parent = parent;
-        }
+  private static class Element extends NativeByteBuffer implements KeyedNativeBuffer {
 
-        @Override
-        public int getRemoteKey() {
-            return parent.getRemoteKey();
-        }
+    private final MemoryRegion region;
+    private boolean valid;
 
-        @Override
-        public int getLocalKey() {
-            return parent.getLocalKey();
-        }
-
-
-        @Override
-        public void free() {
-            parent.free();
-        }
-
-        @Override
-        public boolean isValid() {
-            return parent.isValid();
-        }
+    private Element(ByteBuffer buffer, MemoryRegion region) {
+      super(buffer);
+      this.region = region;
+      this.valid = true;
     }
 
-    public PdMemoryPool(IbvPd protectionDomain, MemoryAllocator allocator,
-                        int elementSize, int numElementsRegion, int numRegions, ByteOrder endianness) {
-        if (protectionDomain == null) {
-            throw new IllegalArgumentException("Protection domain null");
-        }
-        this.protectionDomain = protectionDomain;
-        if (allocator == null) {
-            throw new IllegalArgumentException("Allocator null");
-        }
-        this.allocator = allocator;
-        this.endianness = endianness;
-        if (elementSize < 1) {
-            throw new IllegalArgumentException("Negative or zero element size");
-        }
-        this.elementSize = elementSize;
-        if (numElementsRegion < 1) {
-            throw new IllegalArgumentException("Negative or zero number of freeElements per region");
-        }
-        this.numElementsRegion = numElementsRegion;
-        if (numRegions < 1) {
-            throw new IllegalArgumentException("Negative or zero number of regions");
-        }
-        this.regions = new MemoryRegion[numRegions];
-        this.numFreeRegions = numRegions;
-        this.freeElements = new ArrayBlockingQueue<>(numElementsRegion * numRegions);
-    }
-
-    synchronized void allocateRegion() throws IOException {
-        if (!freeElements.isEmpty()) {
-            return;
-        }
-        if (numFreeRegions > 0) {
-            NativeBuffer regionBuffer = allocator.allocate(elementSize * numElementsRegion);
-            if (regions[numFreeRegions - 1] != null) {
-                regionBuffer.free();
-                throw new RuntimeException("There is already a region allocated in this spot!?");
-            }
-
-            MemoryRegion region = new MemoryRegion(regionBuffer);
-            for (int i = 0; i < numElementsRegion; i++) {
-                regionBuffer.limit((i + 1) * elementSize);
-                regionBuffer.position(i * elementSize);
-                ByteBuffer buffer = regionBuffer.sliceToByteBuffer();
-                buffer.order(endianness);
-                freeElements.add(new Element(buffer, region));
-            }
-            regions[--numFreeRegions] = region;
-        } else {
-            throw new OutOfMemoryError("Cannot allocate new region - limit reached");
-        }
-    }
-
-    public KeyedNativeBuffer allocate() throws IOException {
-        KeyedNativeBuffer element;
-        do {
-            if (freeElements.isEmpty()) {
-                allocateRegion();
-            }
-            element = freeElements.poll();
-        } while (element == null);
-        return element;
-    }
-
-    private void free(Element element) {
-        /* we create a new element since we don't want it to get valid again */
-        Element newElement = new Element(element);
-        newElement.order(endianness);
-        freeElements.add(newElement);
+    private Element(Element element) {
+      this(element.toByteBuffer(), element.region);
+      clear();
     }
 
     @Override
-    public void free() throws IOException {
-        for (int i = regions.length - 1; i >= numFreeRegions; i--) {
-            if (regions[i] == null) {
-                break;
-            }
-            regions[i].free();
-            regions[i] = null;
-        }
-        numFreeRegions = regions.length;
+    public int getRemoteKey() {
+      return region.mr.getRkey();
+    }
+
+    @Override
+    public int getLocalKey() {
+      return region.mr.getLkey();
+    }
+
+    @Override
+    public void free() {
+      if (!isValid()) {
+        throw new IllegalStateException("double free buffer");
+      }
+      valid = false;
+      region.getOuter().free(this);
     }
 
     @Override
     public boolean isValid() {
-        return true;
+      return valid;
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        free();
+    protected KeyedNativeBuffer construct(ByteBuffer buffer) {
+      return new ChildElement(this, buffer);
+    }
+  }
+
+  private static class ChildElement extends NativeByteBuffer implements KeyedNativeBuffer {
+
+    private final Element parent;
+
+    ChildElement(Element parent, ByteBuffer buffer) {
+      super(buffer);
+      this.parent = parent;
     }
 
-    public IbvPd getProtectionDomain() {
-        return protectionDomain;
+    @Override
+    public int getRemoteKey() {
+      return parent.getRemoteKey();
     }
+
+    @Override
+    public int getLocalKey() {
+      return parent.getLocalKey();
+    }
+
+
+    @Override
+    public void free() {
+      parent.free();
+    }
+
+    @Override
+    public boolean isValid() {
+      return parent.isValid();
+    }
+  }
+
+  PdMemoryPool(IbvPd protectionDomain, MemoryAllocator allocator,
+      int elementSize, int numElementsRegion, int numRegions, ByteOrder endianness) {
+    if (protectionDomain == null) {
+      throw new IllegalArgumentException("Protection domain null");
+    }
+    this.protectionDomain = protectionDomain;
+    if (allocator == null) {
+      throw new IllegalArgumentException("Allocator null");
+    }
+    this.allocator = allocator;
+    this.endianness = endianness;
+    if (elementSize < 1) {
+      throw new IllegalArgumentException("Negative or zero element size");
+    }
+    this.elementSize = elementSize;
+    if (numElementsRegion < 1) {
+      throw new IllegalArgumentException("Negative or zero number of freeElements per region");
+    }
+    this.numElementsRegion = numElementsRegion;
+    if (numRegions < 1) {
+      throw new IllegalArgumentException("Negative or zero number of regions");
+    }
+    this.regions = new MemoryRegion[numRegions];
+    this.numFreeRegions = numRegions;
+    this.freeElements = new ArrayBlockingQueue<>(numElementsRegion * numRegions);
+  }
+
+  synchronized void allocateRegion() throws IOException {
+    if (!freeElements.isEmpty()) {
+      return;
+    }
+    if (numFreeRegions > 0) {
+      NativeBuffer regionBuffer = allocator.allocate(elementSize * numElementsRegion);
+      if (regions[numFreeRegions - 1] != null) {
+        regionBuffer.free();
+        throw new RuntimeException("There is already a region allocated in this spot!?");
+      }
+
+      MemoryRegion region = new MemoryRegion(regionBuffer);
+      for (int i = 0; i < numElementsRegion; i++) {
+        regionBuffer.limit((i + 1) * elementSize);
+        regionBuffer.position(i * elementSize);
+        ByteBuffer buffer = regionBuffer.sliceToByteBuffer();
+        buffer.order(endianness);
+        freeElements.add(new Element(buffer, region));
+      }
+      regions[--numFreeRegions] = region;
+    } else {
+      throw new OutOfMemoryError("Cannot allocate new region - limit reached");
+    }
+  }
+
+  public KeyedNativeBuffer allocate() throws IOException {
+    KeyedNativeBuffer element;
+    do {
+      if (freeElements.isEmpty()) {
+        allocateRegion();
+      }
+      element = freeElements.poll();
+    } while (element == null);
+    return element;
+  }
+
+  private void free(Element element) {
+    /* we create a new element since we don't want it to get valid again */
+    Element newElement = new Element(element);
+    newElement.order(endianness);
+    freeElements.add(newElement);
+  }
+
+  @Override
+  public void free() throws IOException {
+    for (int i = regions.length - 1; i >= numFreeRegions; i--) {
+      if (regions[i] == null) {
+        break;
+      }
+      regions[i].free();
+      regions[i] = null;
+    }
+    numFreeRegions = regions.length;
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
+  }
+
+  public IbvPd getProtectionDomain() {
+    return protectionDomain;
+  }
 }

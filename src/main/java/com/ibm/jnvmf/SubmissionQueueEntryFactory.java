@@ -17,6 +17,6 @@
 
 package com.ibm.jnvmf;
 
-public interface SubmissionQueueEntryFactory<Sqe extends SubmissionQueueEntry> {
-    Sqe construct(NativeBuffer buffer);
+public interface SubmissionQueueEntryFactory<SqeT extends SubmissionQueueEntry> {
+  SqeT construct(NativeBuffer buffer);
 }

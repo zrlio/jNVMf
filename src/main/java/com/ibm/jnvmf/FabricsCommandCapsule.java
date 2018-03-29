@@ -17,9 +17,10 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsCommandCapsule<Sqe extends FabricsSubmissionQueueEntry>
-        extends CommandCapsule<Sqe> {
-    FabricsCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<Sqe> sqeFactory) {
-        super(buffer, sqeFactory);
-    }
+public class FabricsCommandCapsule<SqeT extends FabricsSubmissionQueueEntry>
+    extends CommandCapsule<SqeT> {
+
+  FabricsCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<SqeT> sqeFactory) {
+    super(buffer, sqeFactory);
+  }
 }

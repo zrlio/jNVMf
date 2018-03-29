@@ -17,23 +17,13 @@
 
 package com.ibm.jnvmf;
 
-import org.junit.jupiter.api.Test;
+import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+public class IoQueuePair extends QueuePair {
 
-class ControllerIDTest {
-    @Test
-    void constants() {
-        ControllerID id = ControllerID.valueOf(ControllerID.ADMIN_DYNAMIC.toShort());
-        assertEquals(ControllerID.ADMIN_DYNAMIC, id);
-        id = ControllerID.valueOf(ControllerID.ADMIN_STATIC.toShort());
-        assertEquals(ControllerID.ADMIN_STATIC, id);
-    }
-
-    @Test
-    void equals() {
-        ControllerID id = ControllerID.valueOf((short) 0x123);
-        ControllerID id2 = ControllerID.valueOf((short) 0x123);
-        assertEquals(id, id2);
-    }
+  IoQueuePair(Controller controller, QueueId queueId, short submissionQueueSize,
+      int additionalSgls, int inCapsuleDataSize, int maxInlineSize) throws IOException {
+    super(controller, queueId, submissionQueueSize, additionalSgls, inCapsuleDataSize,
+        maxInlineSize);
+  }
 }

@@ -17,23 +17,14 @@
 
 package com.ibm.jnvmf;
 
-public class NvmWriteCommandSQE extends NvmIOCommandSQE {
-    private final SGLDataBlockDescriptor sglDataBlockDescriptor;
+public class LbaDataSize extends Pow2Size {
 
-    NvmWriteCommandSQE(NativeBuffer buffer) {
-        super(buffer);
-        this.sglDataBlockDescriptor = new SGLDataBlockDescriptor(getSGLDescriptor1Buffer());
+  private static final int MINIMUM_DATA_SIZE = 9;
+
+  LbaDataSize(int pow2Size) {
+    super(pow2Size);
+    if (pow2Size < MINIMUM_DATA_SIZE) {
+      throw new IllegalArgumentException("Minimum LBA data size is " + MINIMUM_DATA_SIZE);
     }
-
-    // TODO directives
-
-    SGLDataBlockDescriptor getSGLDataBlockDescriptor() {
-        return sglDataBlockDescriptor;
-    }
-
-    @Override
-    void initialize() {
-        super.initialize();
-        setOpcode(NvmCommandOpcode.WRITE);
-    }
+  }
 }

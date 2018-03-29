@@ -18,12 +18,13 @@
 package com.ibm.jnvmf;
 
 public class NvmCommand<C extends NvmCommandCapsule> extends Command<C, NvmResponseCapsule> {
-    NvmCommand(IOQueuePair queuePair, C command) {
-        super(queuePair, command);
-    }
 
-    @Override
-    public Response<NvmResponseCapsule> newResponse() {
-        return new Response<>(new NvmResponseCapsule());
-    }
+  NvmCommand(IoQueuePair queuePair, C command) {
+    super(queuePair, command);
+  }
+
+  @Override
+  public Response<NvmResponseCapsule> newResponse() {
+    return new Response<>(new NvmResponseCapsule());
+  }
 }

@@ -17,34 +17,35 @@
 
 package com.ibm.jnvmf;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 class NvmeTest {
-    @Test
-    void hostNQN() throws UnknownHostException {
-        Nvme nvme = new Nvme();
-        nvme.getHostNvmeQualifiedName();
 
-        String nqn = "nqn.2014-08.com.example:nvme.host.sys.xyz";
-        nvme = new Nvme(new NvmeQualifiedName(nqn));
-        assertEquals(nqn, nvme.getHostNvmeQualifiedName().toString());
-    }
+  @Test
+  void hostNQN() throws UnknownHostException {
+    Nvme nvme = new Nvme();
+    nvme.getHostNvmeQualifiedName();
 
-    @Tag("rdma")
-    @Test
-    void connectTest() throws IOException {
-        /* assume target is started */
-        Nvme nvme = new Nvme();
-        InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getDestinationAddress(), TestUtil.getPort());
-        NvmfTransportId transportId = new NvmfTransportId(socketAddress, TestUtil.getSubsystemNQN());
-        assertTrue(nvme.connect(transportId) != null);
-    }
+    String nqn = "nqn.2014-08.com.example:nvme.host.sys.xyz";
+    nvme = new Nvme(new NvmeQualifiedName(nqn));
+    assertEquals(nqn, nvme.getHostNvmeQualifiedName().toString());
+  }
+
+  @Tag("rdma")
+  @Test
+  void connectTest() throws IOException {
+    /* assume target is started */
+    Nvme nvme = new Nvme();
+    InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getDestinationAddress(),
+        TestUtil.getPort());
+    NvmfTransportId transportId = new NvmfTransportId(socketAddress, TestUtil.getSubsystemNQN());
+    assertTrue(nvme.connect(transportId) != null);
+  }
 }

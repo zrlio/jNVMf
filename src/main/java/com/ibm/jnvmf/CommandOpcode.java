@@ -18,7 +18,8 @@
 package com.ibm.jnvmf;
 
 abstract class CommandOpcode extends CommandType {
-    protected CommandOpcode(boolean generic, int function, DataTransfer dataTransfer, boolean admin) {
-        super(generic, function, dataTransfer, admin);
-    }
+
+  protected CommandOpcode(boolean generic, int function, DataTransfer dataTransfer, boolean admin) {
+    super(generic, function, dataTransfer, admin);
+  }
 }

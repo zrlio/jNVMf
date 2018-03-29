@@ -17,21 +17,24 @@
 
 package com.ibm.jnvmf;
 
-public class FabricsPropertyGetResponseCQE extends FabricsCompletionQueueEntry {
-    /*
-     * NVMf Spec 1.0 - 3.4
-     */
-    private final static int VALUE_OFFSET = 0;
+public class NvmWriteCommandSqe extends NvmIoCommandSqe {
 
-    private long value;
+  private final SglDataBlockDescriptor sglDataBlockDescriptor;
 
-    public long getValue() {
-        return value;
-    }
+  NvmWriteCommandSqe(NativeBuffer buffer) {
+    super(buffer);
+    this.sglDataBlockDescriptor = new SglDataBlockDescriptor(getSglDescriptor1Buffer());
+  }
 
-    @Override
-    void update(NativeBuffer buffer) {
-        super.update(buffer);
-        value = buffer.getLong(VALUE_OFFSET);
-    }
+  // TODO directives
+
+  SglDataBlockDescriptor getSglDataBlockDescriptor() {
+    return sglDataBlockDescriptor;
+  }
+
+  @Override
+  void initialize() {
+    super.initialize();
+    setOpcode(NvmCommandOpcode.WRITE);
+  }
 }

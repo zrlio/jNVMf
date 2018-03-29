@@ -27,342 +27,332 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class Controller implements Freeable {
-    private short queueId;
-    private final AdminQueuePair adminQueue;
-    private final List<IOQueuePair> ioQueuePairs;
-    private final NvmeQualifiedName hostNvmeQualifiedName;
-    private final NvmfTransportId transportId;
-    private final NvmfRdmaEndpointGroup endpointGroup;
-    private ControllerID controllerId;
-    private final ControllerConfiguration controllerConfiguration;
-    private final ControllerStatus controllerStatus;
-    private final ControllerCapabilities controllerCapabilities;
-    private final List<Namespace> namespaces;
-    private boolean valid;
 
-    private final AdminKeepAliveCommand keepAliveCommand;
-    private final FabricsPropertySetCommand propertySetCommand;
-    private final FabricsPropertyGetCommand propertyGetCommand;
-    private final AdminIdentifyActiveNamespaceIdsCommand activeNamespaceIdsCommand;
-    private NamespaceIdentifierList namespaceIdentifierList;
+  private short queueId;
+  private final AdminQueuePair adminQueue;
+  private final List<IoQueuePair> ioQueuePairs;
+  private final NvmeQualifiedName hostNvmeQualifiedName;
+  private final NvmfTransportId transportId;
+  private final NvmfRdmaEndpointGroup endpointGroup;
+  private ControllerId controllerId;
+  private final ControllerConfiguration controllerConfiguration;
+  private final ControllerStatus controllerStatus;
+  private final ControllerCapabilities controllerCapabilities;
+  private final List<Namespace> namespaces;
+  private boolean valid;
 
-    private IdentifyControllerData identifyControllerData;
+  private final AdminKeepAliveCommand keepAliveCommand;
+  private final FabricsPropertySetCommand propertySetCommand;
+  private final FabricsPropertyGetCommand propertyGetCommand;
+  private final AdminIdentifyActiveNamespaceIdsCommand activeNamespaceIdsCommand;
+  private NamespaceIdentifierList namespaceIdentifierList;
 
-    Controller(NvmeQualifiedName hostNvmeQualifiedName, NvmfTransportId transportId) throws IOException {
-        this.hostNvmeQualifiedName = hostNvmeQualifiedName;
-        this.transportId = transportId;
-        this.queueId = 1;
-        //FIXME
-        this.endpointGroup = new NvmfRdmaEndpointGroup(1000);
-        this.endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
+  private IdentifyControllerData identifyControllerData;
 
-        //FIXME
-        setControllerId(ControllerID.ADMIN_DYNAMIC);
-        this.adminQueue = new AdminQueuePair(this);
-        this.ioQueuePairs = new ArrayList<>();
+  Controller(NvmeQualifiedName hostNvmeQualifiedName, NvmfTransportId transportId)
+      throws IOException {
+    this.hostNvmeQualifiedName = hostNvmeQualifiedName;
+    this.transportId = transportId;
+    this.queueId = 1;
+    //FIXME
+    this.endpointGroup = new NvmfRdmaEndpointGroup(1000);
+    this.endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
 
-        this.keepAliveCommand = new AdminKeepAliveCommand(getAdminQueue());
-        this.propertySetCommand = new FabricsPropertySetCommand(getAdminQueue());
-        this.propertyGetCommand = new FabricsPropertyGetCommand(getAdminQueue());
-        this.activeNamespaceIdsCommand = new AdminIdentifyActiveNamespaceIdsCommand(getAdminQueue());
+    //FIXME
+    setControllerId(ControllerId.ADMIN_DYNAMIC);
+    this.adminQueue = new AdminQueuePair(this);
+    this.ioQueuePairs = new ArrayList<>();
 
-        this.controllerConfiguration = new ControllerConfiguration();
-        this.controllerCapabilities = new ControllerCapabilities();
-        controllerCapabilities.update(getProperty(ControllerCapabilities.PROPERTY));
-        this.controllerStatus = new ControllerStatus();
+    this.keepAliveCommand = new AdminKeepAliveCommand(getAdminQueue());
+    this.propertySetCommand = new FabricsPropertySetCommand(getAdminQueue());
+    this.propertyGetCommand = new FabricsPropertyGetCommand(getAdminQueue());
+    this.activeNamespaceIdsCommand = new AdminIdentifyActiveNamespaceIdsCommand(getAdminQueue());
 
-        this.namespaces = new ArrayList<>();
-        valid = true;
+    this.controllerConfiguration = new ControllerConfiguration();
+    this.controllerCapabilities = new ControllerCapabilities();
+    controllerCapabilities.update(getProperty(ControllerCapabilities.PROPERTY));
+    this.controllerStatus = new ControllerStatus();
+
+    this.namespaces = new ArrayList<>();
+    valid = true;
+  }
+
+  private IdentifyControllerData identifyController() throws IOException {
+    ByteBuffer dataBuffer = ByteBuffer.allocateDirect(IdentifyControllerData.SIZE);
+    KeyedNativeBuffer registeredDataBuffer = adminQueue.registerMemory(dataBuffer);
+    IdentifyControllerData identifyControllerData = new IdentifyControllerData(registeredDataBuffer,
+        controllerCapabilities);
+    AdminIdentifyControllerCommand identifyControllerCommand = new AdminIdentifyControllerCommand(
+        adminQueue);
+    identifyControllerCommand.getCommandCapsule().setSglDescriptor(identifyControllerData);
+
+    ResponseFuture<AdminResponseCapsule> responseFuture = identifyControllerCommand
+        .newResponseFuture();
+    Future<?> commandFuture = identifyControllerCommand.newCommandFuture();
+    identifyControllerCommand.execute(responseFuture);
+    AdminResponseCapsule response;
+    try {
+      commandFuture.get();
+      response = responseFuture.get();
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
+    } catch (ExecutionException exception) {
+      throw new IOException(exception);
+    }
+    AdminCompletionQueueEntry cqe = response.getCompletionQueueEntry();
+    if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
+      throw new UnsuccessfulComandException(cqe);
+    }
+    return identifyControllerData;
+  }
+
+  public IdentifyControllerData getIdentifyControllerData() throws IOException {
+    if (identifyControllerData == null) {
+      identifyControllerData = identifyController();
+    }
+    return identifyControllerData;
+  }
+
+  public AdminQueuePair getAdminQueue() {
+    return adminQueue;
+  }
+
+  private QueueId nextQueueId() {
+    return new QueueId(queueId++);
+  }
+
+  public IoQueuePair createIoQueuePair(int submissionQueueSize) throws IOException {
+    return createIoQueuePair(submissionQueueSize, 0, 0, 0);
+  }
+
+  public IoQueuePair createIoQueuePair(int submissionQueueSize, int additionalSgls,
+      int inCapsuleDataSize,
+      int maxInlineSize) throws IOException {
+    if ((submissionQueueSize & ~((1 << Short.SIZE) - 1)) != 0) {
+      throw new IllegalArgumentException("Size to large (" + submissionQueueSize + ")");
+    }
+    /* only update controller status if we need to */
+    if (!controllerStatus.isReady() && !getControllerStatus().isReady()) {
+      throw new IllegalStateException("Controller not ready - enable controller");
+    }
+    getControllerConfiguration();
+    if (controllerConfiguration.getIoSubmissionQueueEntrySize().value() == 0
+        || controllerConfiguration.getIoCompletionQueueEntrySize().value() == 0) {
+      controllerConfiguration.setIoSubmissionQueueEntrySize(
+          getIdentifyControllerData().getRequiredSubmissionQueueEntrySize());
+      controllerConfiguration.setIoCompletionQueueEntrySize(
+          getIdentifyControllerData().getRequiredCompletionQueueEntrySize());
+      syncConfiguration();
+    }
+    IoQueuePair ioQueuePair = new IoQueuePair(this, nextQueueId(), (short) submissionQueueSize,
+        additionalSgls, inCapsuleDataSize, maxInlineSize);
+    ioQueuePairs.add(ioQueuePair);
+    return ioQueuePair;
+  }
+
+  private void updateNamespacesIdentfiers() throws IOException {
+    AdminIdentifyActiveNamespacesCommandCapsule commandCapsule = activeNamespaceIdsCommand
+        .getCommandCapsule();
+    if (namespaceIdentifierList == null) {
+      ByteBuffer buffer = ByteBuffer.allocateDirect(NamespaceIdentifierList.SIZE);
+      KeyedNativeBuffer registeredBuffer = getAdminQueue().registerMemory(buffer);
+      namespaceIdentifierList = new NamespaceIdentifierList(registeredBuffer);
+
+      commandCapsule.setSglDescriptor(namespaceIdentifierList);
+      AdminIdentifyCommandSqe sqe = commandCapsule.getSubmissionQueueEntry();
+      sqe.setNamespaceIdentifier(new NamespaceIdentifier(0));
+    }
+    Future<?> commandFuture = activeNamespaceIdsCommand.newCommandFuture();
+    ResponseFuture<AdminResponseCapsule> responseFuture = activeNamespaceIdsCommand
+        .newResponseFuture();
+    activeNamespaceIdsCommand.execute(responseFuture);
+    try {
+      commandFuture.get();
+      AdminResponseCapsule response = responseFuture.get();
+      AdminCompletionQueueEntry cqe = response.getCompletionQueueEntry();
+      if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
+        throw new UnsuccessfulComandException(cqe);
+      }
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
+    } catch (ExecutionException exception) {
+      throw new IOException(exception);
     }
 
-    private IdentifyControllerData identifyController() throws IOException {
-        ByteBuffer dataBuffer = ByteBuffer.allocateDirect(IdentifyControllerData.SIZE);
-        KeyedNativeBuffer registeredDataBuffer = adminQueue.registerMemory(dataBuffer);
-        IdentifyControllerData identifyControllerData = new IdentifyControllerData(registeredDataBuffer,
-                controllerCapabilities);
-        AdminIdentifyControllerCommand identifyControllerCommand = new AdminIdentifyControllerCommand(adminQueue);
-        identifyControllerCommand.getCommandCapsule().setSGLDescriptor(identifyControllerData);
-
-
-        ResponseFuture<AdminResponseCapsule> responseFuture = identifyControllerCommand.newResponseFuture();
-        Future<?> commandFuture = identifyControllerCommand.newCommandFuture();
-        identifyControllerCommand.execute(responseFuture);
-        AdminResponseCapsule response;
-        try {
-            commandFuture.get();
-            response = responseFuture.get();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            throw new IOException(e);
-        }
-        AdminCompletionQueueEntry cqe = response.getCompletionQueueEntry();
-        if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
-            throw new UnsuccessfulComandException(cqe);
-        }
-        return identifyControllerData;
+    namespaces.clear();
+    NamespaceIdentifier namespaceId;
+    for (int i = 0; (namespaceId = namespaceIdentifierList.getIdentifier(i)) != null; i++) {
+      namespaces.add(new Namespace(this, namespaceId));
     }
+  }
 
-    public IdentifyControllerData getIdentifyControllerData() throws IOException {
-        if (identifyControllerData == null) {
-            identifyControllerData = identifyController();
-        }
-        return identifyControllerData;
+  public List<Namespace> getActiveNamespaces() throws IOException {
+    updateNamespacesIdentfiers();
+    return namespaces;
+  }
+
+  public void keepAlive() throws IOException {
+    Future<?> commandFuture = keepAliveCommand.newCommandFuture();
+    ResponseFuture<AdminResponseCapsule> responseFuture = keepAliveCommand.newResponseFuture();
+    keepAliveCommand.execute(responseFuture);
+    AdminResponseCapsule responseCapsule;
+    try {
+      commandFuture.get();
+      responseCapsule = responseFuture.get();
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
+    } catch (ExecutionException exception) {
+      throw new IOException(exception);
     }
-
-    public AdminQueuePair getAdminQueue() {
-        return adminQueue;
+    AdminCompletionQueueEntry cqe = responseCapsule.getCompletionQueueEntry();
+    if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
+      throw new UnsuccessfulComandException(cqe);
     }
+  }
 
-    private QueueID nextQueueId() {
-        return new QueueID(queueId++);
+  private void setProperty(Property property, long value) throws IOException {
+    FabricsPropertySetCommandCapsule propertySetCommandCapsule = propertySetCommand
+        .getCommandCapsule();
+    propertySetCommandCapsule.getSubmissionQueueEntry().setProperty(property);
+    propertySetCommandCapsule.getSubmissionQueueEntry().setValue(value);
+
+    Future<?> commandFuture = propertySetCommand.newCommandFuture();
+    ResponseFuture<FabricsResponseCapsule> responseFuture = propertySetCommand.newResponseFuture();
+    propertySetCommand.execute(responseFuture);
+    FabricsResponseCapsule responseCapsule;
+    try {
+      commandFuture.get();
+      responseCapsule = responseFuture.get();
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
+    } catch (ExecutionException exception) {
+      throw new IOException(exception);
     }
-
-    public IOQueuePair createIOQueuePair(int submissionQueueSize) throws IOException {
-        return createIOQueuePair(submissionQueueSize, 0, 0, 0);
+    FabricsCompletionQueueEntry cqe = responseCapsule.getCompletionQueueEntry();
+    if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
+      throw new UnsuccessfulComandException(cqe);
     }
+  }
 
-    public IOQueuePair createIOQueuePair(int submissionQueueSize, int additionalSGLs, int inCapsuleDataSize,
-                                         int maxInlineSize) throws IOException {
-        if ((submissionQueueSize & ~((1 << Short.SIZE) - 1)) != 0) {
-            throw new IllegalArgumentException("Size to large (" + submissionQueueSize + ")");
-        }
-        /* only update controller status if we need to */
-        if (!controllerStatus.isReady() && !getControllerStatus().isReady()) {
-            throw new IllegalStateException("Controller not ready - enable controller");
-        }
-        getControllerConfiguration();
-        if (controllerConfiguration.getIOSubmissionQueueEntrySize().value() == 0 ||
-                controllerConfiguration.getIOCompletionQueueEntrySize().value() == 0) {
-            controllerConfiguration.setIOSubmissionQueueEntrySize(
-                    getIdentifyControllerData().getRequiredSubmissionQueueEntrySize());
-            controllerConfiguration.setIOCompletionQueueEntrySize(
-                    getIdentifyControllerData().getRequiredCompletionQueueEntrySize());
-            syncConfiguration();
-        }
-        IOQueuePair ioQueuePair = new IOQueuePair(this, nextQueueId(), (short) submissionQueueSize,
-                additionalSGLs, inCapsuleDataSize, maxInlineSize);
-        ioQueuePairs.add(ioQueuePair);
-        return ioQueuePair;
+  private long getProperty(Property property) throws IOException {
+    FabricsPropertyGetCommandCapsule propertyGetCommandCapsule = propertyGetCommand
+        .getCommandCapsule();
+    propertyGetCommandCapsule.getSubmissionQueueEntry().setProperty(property);
+
+    Future<?> commandFuture = propertyGetCommand.newCommandFuture();
+    ResponseFuture<FabricsPropertyGetResponseCapsule> responseFuture = propertyGetCommand
+        .newResponseFuture();
+    propertyGetCommand.execute(responseFuture);
+    FabricsPropertyGetResponseCapsule responseCapsule;
+    try {
+      commandFuture.get();
+      responseCapsule = responseFuture.get();
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
+    } catch (ExecutionException exception) {
+      throw new IOException(exception);
     }
-
-    private void updateNamespacesIdentfiers() throws IOException {
-        AdminIdentifyActiveNamespacesCommandCapsule commandCapsule = activeNamespaceIdsCommand.getCommandCapsule();
-        if (namespaceIdentifierList == null) {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(NamespaceIdentifierList.SIZE);
-            KeyedNativeBuffer registeredBuffer = getAdminQueue().registerMemory(buffer);
-            namespaceIdentifierList = new NamespaceIdentifierList(registeredBuffer);
-
-            commandCapsule.setSGLDescriptor(namespaceIdentifierList);
-            AdminIdentifyCommandSQE sqe = commandCapsule.getSubmissionQueueEntry();
-            sqe.setNamespaceIdentifier(new NamespaceIdentifier(0));
-        }
-        Future<?> commandFuture = activeNamespaceIdsCommand.newCommandFuture();
-        ResponseFuture<AdminResponseCapsule> responseFuture = activeNamespaceIdsCommand.newResponseFuture();
-        activeNamespaceIdsCommand.execute(responseFuture);
-        try {
-            commandFuture.get();
-            AdminResponseCapsule response = responseFuture.get();
-            AdminCompletionQueueEntry cqe = response.getCompletionQueueEntry();
-            if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
-                throw new UnsuccessfulComandException(cqe);
-            }
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            throw new IOException(e);
-        }
-
-        namespaces.clear();
-        NamespaceIdentifier namespaceId;
-        for (int i = 0; (namespaceId = namespaceIdentifierList.getIdentifier(i)) != null; i++) {
-            namespaces.add(new Namespace(this, namespaceId));
-        }
+    FabricsPropertyGetResponseCqe cqe = responseCapsule.getCompletionQueueEntry();
+    if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
+      throw new UnsuccessfulComandException(cqe);
     }
+    return cqe.getValue();
+  }
 
-    public List<Namespace> getActiveNamespaces() throws IOException {
-        updateNamespacesIdentfiers();
-        return namespaces;
+  public void syncConfiguration() throws IOException {
+    if (LegacySupport.ENABLED) {
+      LegacySupport.initializeControllerConfiguration(controllerConfiguration);
     }
+    setProperty(controllerConfiguration.PROPERTY, controllerConfiguration.toInt());
+  }
 
-
-    public void detach() throws IOException {
-        for (IOQueuePair ioQueuePair : ioQueuePairs) {
-            ioQueuePair.free();
-        }
-        adminQueue.free();
-        try {
-            endpointGroup.close();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
+  public void waitUntilReady() throws IOException, TimeoutException {
+    if (!getControllerConfiguration().getEnable()) {
+      throw new IllegalStateException("Controller not enabled");
     }
-
-    public void keepAlive() throws IOException {
-        Future<?> commandFuture = keepAliveCommand.newCommandFuture();
-        ResponseFuture<AdminResponseCapsule> responseFuture = keepAliveCommand.newResponseFuture();
-        keepAliveCommand.execute(responseFuture);
-        AdminResponseCapsule responseCapsule;
-        try {
-            commandFuture.get();
-            responseCapsule = responseFuture.get();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            throw new IOException(e);
-        }
-        AdminCompletionQueueEntry cqe = responseCapsule.getCompletionQueueEntry();
-        if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
-            throw new UnsuccessfulComandException(cqe);
-        }
+    long maxWaitDuration = TimeUnit.NANOSECONDS.convert(getControllerCapabilities().getTimeout(),
+        ControllerCapabilities.getTimeoutUnit());
+    long maxWaitTime = System.nanoTime() + maxWaitDuration;
+    long sleepTime = TimeUnit.MILLISECONDS.convert(getControllerCapabilities().getTimeout(),
+        ControllerCapabilities.getTimeoutUnit()) / 10;
+    ControllerStatus controllerStatus;
+    while (!(controllerStatus = getControllerStatus()).isReady()) {
+      if (controllerStatus.isFatalStatus()) {
+        throw new IOException("Fatal controller error");
+      }
+      try {
+        Thread.sleep(sleepTime);
+      } catch (InterruptedException exception) {
+        new IOException(exception);
+      }
+      if (maxWaitTime > System.nanoTime()) {
+        throw new TimeoutException("Controller did not become ready in "
+            + getControllerCapabilities().getTimeout() + ControllerCapabilities.getTimeoutUnit());
+      }
     }
+  }
 
-    private void setProperty(Property property, long value) throws IOException {
-        FabricsPropertySetCommandCapsule propertySetCommandCapsule = propertySetCommand.getCommandCapsule();
-        propertySetCommandCapsule.getSubmissionQueueEntry().setProperty(property);
-        propertySetCommandCapsule.getSubmissionQueueEntry().setValue(value);
+  public NvmfTransportId getTransportId() {
+    return transportId;
+  }
 
-        Future<?> commandFuture = propertySetCommand.newCommandFuture();
-        ResponseFuture<FabricsResponseCapsule> responseFuture = propertySetCommand.newResponseFuture();
-        propertySetCommand.execute(responseFuture);
-        FabricsResponseCapsule responseCapsule;
-        try {
-            commandFuture.get();
-            responseCapsule = responseFuture.get();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            throw new IOException(e);
-        }
-        FabricsCompletionQueueEntry cqe = responseCapsule.getCompletionQueueEntry();
-        if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
-            throw new UnsuccessfulComandException(cqe);
-        }
+  NvmfRdmaEndpointGroup getEndpointGroup() {
+    return endpointGroup;
+  }
+
+  void setControllerId(ControllerId controllerId) {
+    this.controllerId = controllerId;
+  }
+
+  public ControllerId getControllerId() {
+    return controllerId;
+  }
+
+  @Override
+  public void free() throws IOException {
+    valid = false;
+    try {
+      keepAliveCommand.getCommandCapsule().free();
+      propertySetCommand.getCommandCapsule().free();
+      propertyGetCommand.getCommandCapsule().free();
+      activeNamespaceIdsCommand.getCommandCapsule().free();
+    } catch (Exception exception) {
+      throw new IOException(exception);
     }
-
-    private long getProperty(Property property) throws IOException {
-        FabricsPropertyGetCommandCapsule propertyGetCommandCapsule = propertyGetCommand.getCommandCapsule();
-        propertyGetCommandCapsule.getSubmissionQueueEntry().setProperty(property);
-
-        Future<?> commandFuture = propertyGetCommand.newCommandFuture();
-        ResponseFuture<FabricsPropertyGetResponseCapsule> responseFuture = propertyGetCommand.newResponseFuture();
-        propertyGetCommand.execute(responseFuture);
-        FabricsPropertyGetResponseCapsule responseCapsule;
-        try {
-            commandFuture.get();
-            responseCapsule = responseFuture.get();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        } catch (ExecutionException e) {
-            throw new IOException(e);
-        }
-        FabricsPropertyGetResponseCQE cqe = responseCapsule.getCompletionQueueEntry();
-        if (cqe.getStatusCode() != GenericStatusCode.getInstance().SUCCESS) {
-            throw new UnsuccessfulComandException(cqe);
-        }
-        return cqe.getValue();
+    if (identifyControllerData != null) {
+      identifyControllerData.getBuffer().free();
     }
-
-    public void syncConfiguration() throws IOException {
-        if (LegacySupport.ENABLED) {
-            LegacySupport.initializeControllerConfiguration(controllerConfiguration);
-        }
-        setProperty(controllerConfiguration.PROPERTY, controllerConfiguration.toInt());
+    adminQueue.free();
+    for (QueuePair qp : ioQueuePairs) {
+      qp.free();
     }
-
-    public void waitUntilReady() throws IOException, TimeoutException {
-        if (!getControllerConfiguration().getEnable()) {
-            throw new IllegalStateException("Controller not enabled");
-        }
-        long maxWaitDuration = TimeUnit.NANOSECONDS.convert(getControllerCapabilities().getTimeout(),
-                ControllerCapabilities.getTimeoutUnit());
-        long maxWaitTime = System.nanoTime() + maxWaitDuration;
-        long sleepTime = TimeUnit.MILLISECONDS.convert(getControllerCapabilities().getTimeout(),
-                ControllerCapabilities.getTimeoutUnit()) / 10;
-        ControllerStatus controllerStatus;
-        while (!(controllerStatus = getControllerStatus()).isReady()) {
-            if (controllerStatus.isFatalStatus()) {
-                throw new IOException("Fatal controller error");
-            }
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                new IOException(e);
-            }
-            if (maxWaitTime > System.nanoTime()) {
-                throw new TimeoutException("Controller did not become ready in " +
-                        getControllerCapabilities().getTimeout() + ControllerCapabilities.getTimeoutUnit());
-            }
-        }
+    try {
+      endpointGroup.close();
+    } catch (InterruptedException exception) {
+      throw new IOException(exception);
     }
+  }
 
-    public NvmfTransportId getTransportId() {
-        return transportId;
-    }
+  @Override
+  public boolean isValid() {
+    return valid;
+  }
 
-    NvmfRdmaEndpointGroup getEndpointGroup() {
-        return endpointGroup;
-    }
+  public ControllerConfiguration getControllerConfiguration() throws IOException {
+    controllerConfiguration.update((int) getProperty(ControllerConfiguration.PROPERTY));
+    return controllerConfiguration;
+  }
 
-    void setControllerId(ControllerID controllerId) {
-        this.controllerId = controllerId;
-    }
+  public ControllerStatus getControllerStatus() throws IOException {
+    controllerStatus.update((int) getProperty(ControllerStatus.PROPERTY));
+    return controllerStatus;
+  }
 
-    public ControllerID getControllerId() {
-        return controllerId;
-    }
+  public ControllerCapabilities getControllerCapabilities() {
+    return controllerCapabilities;
+  }
 
-    @Override
-    public void free() throws IOException {
-        valid = false;
-        try {
-            keepAliveCommand.getCommandCapsule().free();
-            propertySetCommand.getCommandCapsule().free();
-            propertyGetCommand.getCommandCapsule().free();
-            activeNamespaceIdsCommand.getCommandCapsule().free();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
-        if (identifyControllerData != null) {
-            identifyControllerData.getBuffer().free();
-        }
-        adminQueue.free();
-        for (QueuePair qp : ioQueuePairs) {
-            qp.free();
-        }
-        try {
-            endpointGroup.close();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
-    }
-
-    @Override
-    public boolean isValid() {
-        return valid;
-    }
-
-    public ControllerConfiguration getControllerConfiguration() throws IOException {
-        controllerConfiguration.update((int) getProperty(ControllerConfiguration.PROPERTY));
-        return controllerConfiguration;
-    }
-
-    public ControllerStatus getControllerStatus() throws IOException {
-        controllerStatus.update((int) getProperty(ControllerStatus.PROPERTY));
-        return controllerStatus;
-    }
-
-    public ControllerCapabilities getControllerCapabilities() {
-        return controllerCapabilities;
-    }
-
-    public NvmeQualifiedName getHostNvmeQualifiedName() {
-        return hostNvmeQualifiedName;
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-        free();
-    }
+  public NvmeQualifiedName getHostNvmeQualifiedName() {
+    return hostNvmeQualifiedName;
+  }
 }

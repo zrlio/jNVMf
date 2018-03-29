@@ -19,88 +19,88 @@ package com.ibm.jnvmf;
 
 class BitUtil {
 
-    private static void checkBounds(int n, int limit) {
-        if (n < 0) {
-            throw new IllegalArgumentException("negative index " + n);
-        }
-        if (n >= limit) {
-            throw new IllegalArgumentException("index too large " + n + ">=" + limit);
-        }
+  private static void checkBounds(int position, int limit) {
+    if (position < 0) {
+      throw new IllegalArgumentException("negative index " + position);
     }
+    if (position >= limit) {
+      throw new IllegalArgumentException("index too large " + position + ">=" + limit);
+    }
+  }
 
-    static boolean getBit(int value, int n) {
-        checkBounds(n, Integer.SIZE);
-        return (value & (1 << n)) == 0 ? false : true;
-    }
+  static boolean getBit(int value, int position) {
+    checkBounds(position, Integer.SIZE);
+    return (value & (1 << position)) == 0 ? false : true;
+  }
 
-    static boolean getBit(long value, int n) {
-        checkBounds(n, Long.SIZE);
-        return (value & (1L << n)) == 0 ? false : true;
-    }
+  static boolean getBit(long value, int position) {
+    checkBounds(position, Long.SIZE);
+    return (value & (1L << position)) == 0 ? false : true;
+  }
 
-    static int clearBit(int value, int n) {
-        checkBounds(n, Integer.SIZE);
-        return value & ~(1 << n);
-    }
+  static int clearBit(int value, int position) {
+    checkBounds(position, Integer.SIZE);
+    return value & ~(1 << position);
+  }
 
-    static int setBit(int value, int n) {
-        checkBounds(n, Integer.SIZE);
-        return value | (1 << n);
-    }
+  static int setBit(int value, int position) {
+    checkBounds(position, Integer.SIZE);
+    return value | (1 << position);
+  }
 
-    static int setBitTo(int value, int n, boolean b) {
-        if (b) {
-            return setBit(value, n);
-        } else {
-            return clearBit(value, n);
-        }
+  static int setBitTo(int value, int position, boolean setTo) {
+    if (setTo) {
+      return setBit(value, position);
+    } else {
+      return clearBit(value, position);
     }
+  }
 
-    private static int getMask(int start, int end) {
-        checkBounds(start, Integer.SIZE);
-        checkBounds(end, Integer.SIZE);
-        if (start > end) {
-            throw new IllegalArgumentException("start index exceeds end");
-        }
-        return (int) ((1L << (end + 1 - start)) - 1L);
+  private static int getMask(int start, int end) {
+    checkBounds(start, Integer.SIZE);
+    checkBounds(end, Integer.SIZE);
+    if (start > end) {
+      throw new IllegalArgumentException("start index exceeds end");
     }
+    return (int) ((1L << (end + 1 - start)) - 1L);
+  }
 
-    /* [start, end] (inclusive) */
-    static int getBits(int value, int start, int end) {
-        int mask = getMask(start, end);
-        value = value >> start;
-        return value & mask;
+  private static long getMaskLong(int start, int end) {
+    checkBounds(start, Long.SIZE);
+    checkBounds(end, Long.SIZE);
+    if (start > end) {
+      throw new IllegalArgumentException("start index exceeds end");
     }
+    return (1L << (end + 1 - start)) - 1L;
+  }
 
-    private static long getMaskLong(int start, int end) {
-        checkBounds(start, Long.SIZE);
-        checkBounds(end, Long.SIZE);
-        if (start > end) {
-            throw new IllegalArgumentException("start index exceeds end");
-        }
-        return (1L << (end + 1 - start)) - 1L;
-    }
+  /* [start, end] (inclusive) */
+  static int getBits(int value, int start, int end) {
+    int mask = getMask(start, end);
+    value = value >> start;
+    return value & mask;
+  }
 
-    /* [start, end] (inclusive) */
-    static long getBits(long value, int start, int end) {
-        long mask = getMaskLong(start, end);
-        value = value >> start;
-        return value & mask;
-    }
+  /* [start, end] (inclusive) */
+  static long getBits(long value, int start, int end) {
+    long mask = getMaskLong(start, end);
+    value = value >> start;
+    return value & mask;
+  }
 
-    static int clearBits(int value, int start, int end) {
-        int mask = getMask(start, end);
-        return value & ~(mask << start);
-    }
+  static int clearBits(int value, int start, int end) {
+    int mask = getMask(start, end);
+    return value & ~(mask << start);
+  }
 
-    /* [start, end] (inclusive) */
-    static int setBitsTo(int value, int start, int end, int setTo) {
-        value = clearBits(value, start, end);
-        int mask = getMask(start, end);
-        if (setTo != (setTo & mask)) {
-            throw new IllegalArgumentException(
-                    Integer.toHexString(setTo) + " does not fit inside " + start + ":" + end);
-        }
-        return value | (setTo << start);
+  /* [start, end] (inclusive) */
+  static int setBitsTo(int value, int start, int end, int setTo) {
+    value = clearBits(value, start, end);
+    int mask = getMask(start, end);
+    if (setTo != (setTo & mask)) {
+      throw new IllegalArgumentException(
+          Integer.toHexString(setTo) + " does not fit inside " + start + ":" + end);
     }
+    return value | (setTo << start);
+  }
 }

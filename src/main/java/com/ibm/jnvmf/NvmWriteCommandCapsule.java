@@ -17,25 +17,27 @@
 
 package com.ibm.jnvmf;
 
-public class NvmWriteCommandCapsule extends NvmIOCommandCapsule {
-    private static final SubmissionQueueEntryFactory<NvmIOCommandSQE> sqeFactory =
-            buffer -> new NvmWriteCommandSQE(buffer);
+public class NvmWriteCommandCapsule extends NvmIoCommandCapsule {
 
-    NvmWriteCommandCapsule(KeyedNativeBuffer buffer, int additionalSGLs, int inCapsuleDataOffset,
-                           int inCapsuleDataSize) {
-        super(buffer, sqeFactory, additionalSGLs, inCapsuleDataOffset, inCapsuleDataSize);
+  private static final SubmissionQueueEntryFactory<NvmIoCommandSqe> sqeFactory =
+      buffer -> new NvmWriteCommandSqe(buffer);
 
-    }
+  NvmWriteCommandCapsule(KeyedNativeBuffer buffer, int additionalSgls, int inCapsuleDataOffset,
+      int inCapsuleDataSize) {
+    super(buffer, sqeFactory, additionalSgls, inCapsuleDataOffset, inCapsuleDataSize);
 
-    @Override
-    public NvmWriteCommandSQE getSubmissionQueueEntry() {
-        return (NvmWriteCommandSQE) super.getSubmissionQueueEntry();
-    }
+  }
+
+  @Override
+  public NvmWriteCommandSqe getSubmissionQueueEntry() {
+    return (NvmWriteCommandSqe) super.getSubmissionQueueEntry();
+  }
 
 
-    void setIncapsuleData(NativeBuffer incapsuleData) {
-        SGLDataBlockDescriptor sglDataBlockDescriptor = getSubmissionQueueEntry().getSGLDataBlockDescriptor();
-        sglDataBlockDescriptor.setOffset(getIncapsuleDataOffset() + incapsuleData.position());
-        sglDataBlockDescriptor.setLength(incapsuleData.remaining());
-    }
+  void setIncapsuleData(NativeBuffer incapsuleData) {
+    SglDataBlockDescriptor sglDataBlockDescriptor = getSubmissionQueueEntry()
+        .getSglDataBlockDescriptor();
+    sglDataBlockDescriptor.setOffset(getIncapsuleDataOffset() + incapsuleData.position());
+    sglDataBlockDescriptor.setLength(incapsuleData.remaining());
+  }
 }

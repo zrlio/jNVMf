@@ -18,7 +18,8 @@
 package com.ibm.jnvmf;
 
 public class FabricsResponseCapsule extends ResponseCapsule<FabricsCompletionQueueEntry> {
-    public FabricsResponseCapsule() {
-        super(new FabricsCompletionQueueEntry());
-    }
+
+  public FabricsResponseCapsule() {
+    super(new FabricsCompletionQueueEntry());
+  }
 }

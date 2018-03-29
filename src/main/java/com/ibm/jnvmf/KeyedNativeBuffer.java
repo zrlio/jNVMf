@@ -18,7 +18,8 @@
 package com.ibm.jnvmf;
 
 public interface KeyedNativeBuffer extends NativeBuffer {
-    int getRemoteKey();
 
-    int getLocalKey();
+  int getRemoteKey();
+
+  int getLocalKey();
 }
