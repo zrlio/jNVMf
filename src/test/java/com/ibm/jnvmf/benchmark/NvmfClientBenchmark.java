@@ -509,7 +509,7 @@ public class NvmfClientBenchmark {
           NvmIoCommandCapsule commandCapsule = command.getCommandCapsule();
           NvmIoCommandSqe sqe = commandCapsule.getSubmissionQueueEntry();
           sqe.setStartingLba(lba);
-          sqe.setNumberOfLogicalBlocks((short) (sectorCount - 1));
+          sqe.setNumberOfLogicalBlocks(sectorCount);
           sqe.setNamespaceIdentifier(namespaceIdentifier);
           command.execute(response);
           switch (accessPattern) {

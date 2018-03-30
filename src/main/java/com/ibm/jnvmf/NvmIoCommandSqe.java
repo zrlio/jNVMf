@@ -68,8 +68,14 @@ public abstract class NvmIoCommandSqe extends NvmSubmissionQueueEntry {
     TODO: also ILBRT, LBATM, LBAT (+expected for read)
   }*/
 
-  public void setNumberOfLogicalBlocks(short numberOfLogicalBlocks) {
-    getBuffer().putShort(NUMBER_OF_LOGICAL_BLOCKS_OFFSET, numberOfLogicalBlocks);
+  public void setNumberOfLogicalBlocks(int numberOfLogicalBlocks) {
+    if (numberOfLogicalBlocks <= 0) {
+      throw new IllegalArgumentException("number of logical blocks <= 0");
+    }
+    if ((numberOfLogicalBlocks & ~((1 << Short.SIZE) - 1)) != 0) {
+      throw new IllegalArgumentException("number of logical blocks too large (2 bytes max)");
+    }
+    getBuffer().putShort(NUMBER_OF_LOGICAL_BLOCKS_OFFSET, (short)(numberOfLogicalBlocks - 1));
   }
 
   public DatasetManagement getDatasetManagement() {
