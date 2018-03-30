@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -354,5 +355,22 @@ public class Controller implements Freeable {
 
   public NvmeQualifiedName getHostNvmeQualifiedName() {
     return hostNvmeQualifiedName;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
+    }
+    Controller that = (Controller) obj;
+    return Objects.equals(controllerId, that.controllerId);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(controllerId);
   }
 }
