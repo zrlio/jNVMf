@@ -58,7 +58,7 @@ controller.getControllerConfiguration().setEnable(true);
 controller.syncConfiguration();
 controller.waitUntilReady();
 /* create a io queue pair with submission queue size 64 */
-IOQueuePair queuePair = controller.createIOQueuePair(64);
+IoQueuePair queuePair = controller.createIoQueuePair(64);
 /* allocate and register buffer to be used for transfer */
 ByteBuffer buffer = ByteBuffer.allocateDirect(4096);
 KeyedNativeBuffer registeredBuffer = queuePair.registerMemory(buffer);
@@ -68,12 +68,12 @@ NvmReadCommand command = new NvmReadCommand(queuePair);
 Response<NvmResponseCapsule> response = command.newResponse();
 /* set buffer */
 NvmIOCommandCapsule commandCapsule = command.getCommandCapsule();
-commandCapsule.setSGLDescriptor(buffer);
+commandCapsule.setSglDescriptor(buffer);
 /* set length, LBA and namespace identifier */
-NvmIOCommandSQE sqe = commandCapsule.getSubmissionQueueEntry();
-sqe.setStartingLBA(0);
-/* 0-based, i.e. read one block*/
-sqe.setNumberOfLogicalBlocks(0);
+NvmIoCommandSqe sqe = commandCapsule.getSubmissionQueueEntry();
+sqe.setStartingLba(0);
+/* read one block*/
+sqe.setNumberOfLogicalBlocks(1);
 sqe.setNamespaceIdentifier(new NamespaceIdentifier(1));
 volatile boolean done = false;
 /* set callback */
