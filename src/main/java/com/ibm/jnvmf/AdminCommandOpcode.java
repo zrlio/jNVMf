@@ -31,8 +31,4 @@ class AdminCommandOpcode extends CommandOpcode {
   protected AdminCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
     super(generic, function, dataTransfer, true);
   }
-
-  public byte toByte() {
-    return super.toByte();
-  }
 }

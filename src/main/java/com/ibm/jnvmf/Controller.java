@@ -284,7 +284,7 @@ public class Controller implements Freeable {
       try {
         Thread.sleep(sleepTime);
       } catch (InterruptedException exception) {
-        new IOException(exception);
+        throw new IOException(exception);
       }
       if (maxWaitTime > System.nanoTime()) {
         throw new TimeoutException("Controller did not become ready in "

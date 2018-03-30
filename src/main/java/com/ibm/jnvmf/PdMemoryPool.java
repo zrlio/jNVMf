@@ -50,7 +50,6 @@ class PdMemoryPool implements KeyedNativeBufferPool, Freeable {
           | IbvMr.IBV_ACCESS_REMOTE_READ
           | IbvMr.IBV_ACCESS_REMOTE_WRITE;
       this.mr = protectionDomain.regMr(buffer.toByteBuffer(), access).execute().free().getMr();
-      ;
     }
 
     private void free() throws IOException {

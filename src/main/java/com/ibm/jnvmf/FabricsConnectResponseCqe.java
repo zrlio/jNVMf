@@ -56,7 +56,7 @@ public class FabricsConnectResponseCqe extends FabricsCompletionQueueEntry {
     }
   }
 
-  class Success extends Updatable<NativeBuffer> {
+  static class Success extends Updatable<NativeBuffer> {
     /*
      * NVMf Spec 1.0 - 3.3 Figure 22
      *
@@ -89,7 +89,7 @@ public class FabricsConnectResponseCqe extends FabricsCompletionQueueEntry {
     }
   }
 
-  class InvalidParameter extends Updatable<NativeBuffer> {
+  static class InvalidParameter extends Updatable<NativeBuffer> {
 
     /*
      * NVMf Spec 1.0 - 3.3 Figure 22

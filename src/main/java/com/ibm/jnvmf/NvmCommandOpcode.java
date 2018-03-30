@@ -30,8 +30,4 @@ public class NvmCommandOpcode extends CommandOpcode {
   protected NvmCommandOpcode(boolean generic, int function, DataTransfer dataTransfer) {
     super(generic, function, dataTransfer, false);
   }
-
-  public byte toByte() {
-    return super.toByte();
-  }
 }

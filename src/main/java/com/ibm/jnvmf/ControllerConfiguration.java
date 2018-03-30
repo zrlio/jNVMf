@@ -23,7 +23,7 @@ public class ControllerConfiguration {
    * NVMf Spec 1.0 - 3.5.1
    */
   private static final int OFFSET = 0x14;
-  public static Property PROPERTY =
+  public static final Property PROPERTY =
       new Property(Property.Size.getInstance().FOUR_BYTES, OFFSET);
 
   private static final int ENABLE_BITOFFSET = 0;

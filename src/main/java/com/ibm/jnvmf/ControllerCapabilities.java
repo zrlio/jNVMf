@@ -27,7 +27,7 @@ public class ControllerCapabilities {
    * NVMe Spec 1.3a - 3.1.1
    */
   private static final int OFFSET = 0x00;
-  public static Property PROPERTY =
+  public static final Property PROPERTY =
       new Property(Property.Size.getInstance().EIGHT_BYTES, OFFSET);
 
   private static final int MAXIMUM_QUEUE_ENTRIES_SUPPORTED_BITOFFSET_START = 0;
