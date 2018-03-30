@@ -204,8 +204,10 @@ public class NvmfClientBenchmark {
   }
 
   void close() throws IOException {
-    logWriter.flush();
-    logWriter.close();
+    if (logWriter != null) {
+      logWriter.flush();
+      logWriter.close();
+    }
     controller.free();
   }
 

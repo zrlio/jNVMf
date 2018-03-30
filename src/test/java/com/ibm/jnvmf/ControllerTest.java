@@ -234,7 +234,7 @@ class ControllerTest {
       controller.syncConfiguration();
       controller.waitUntilReady();
       assertThrows(IOException.class,
-          () -> controller.createIoQueuePair(32, 0, 0, Integer.MAX_VALUE));
+          () -> controller.createIoQueuePair(32, 0, 0, 1024*1024));
       controller.free();
     }
     {
