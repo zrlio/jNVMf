@@ -44,6 +44,7 @@ public abstract class AdminSubmissionQeueueEntry extends SubmissionQueueEntry {
 
   @Override
   void initialize() {
+    super.initialize();
     setSglUse();
   }
 }
