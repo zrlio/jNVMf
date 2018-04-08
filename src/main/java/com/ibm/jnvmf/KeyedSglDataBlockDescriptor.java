@@ -59,7 +59,7 @@ public class KeyedSglDataBlockDescriptor extends ScatterGatherListDescriptor {
     setIdentifier(Type.getInstance().KEYED_SGL_DATABLOCK, subType);
   }
 
-  void setAddress(long address) {
+  public void setAddress(long address) {
     setSubType(SubType.getInstance().ADDRESS);
     getBuffer().putLong(ADDRESS_OFFSET, address);
   }
@@ -68,7 +68,7 @@ public class KeyedSglDataBlockDescriptor extends ScatterGatherListDescriptor {
     setSubType(SubType.getInstance().INVALIDATE_KEY);
   }
 
-  void setLength(int length) {
+  public void setLength(int length) {
     if ((length & 0xFFFFFF) != length) {
       throw new IllegalArgumentException("Invalid length. Max 3 bytes.");
     }
@@ -78,7 +78,7 @@ public class KeyedSglDataBlockDescriptor extends ScatterGatherListDescriptor {
     getBuffer().put(currentOffset + Short.BYTES, (byte) length);
   }
 
-  void setKey(int key) {
+  public void setKey(int key) {
     getBuffer().putInt(KEY_OFFSET, key);
   }
 

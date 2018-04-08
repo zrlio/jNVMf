@@ -44,7 +44,7 @@ public abstract class NvmIoCommandSqe extends NvmSubmissionQueueEntry {
 
   //TODO metadata
 
-  KeyedSglDataBlockDescriptor getKeyedSglDataBlockDescriptor() {
+  public KeyedSglDataBlockDescriptor getKeyedSglDataBlockDescriptor() {
     return keyedSglDataBlockDescriptor;
   }
 
