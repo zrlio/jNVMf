@@ -117,8 +117,13 @@ public final class IdentifyControllerData extends NativeData<KeyedNativeBuffer> 
   public MemoryPageUnitSize getMaximumDataTransferSize() {
     /* unit of minimum memory page size (CAP.MPSMIN) as power of two */
     int mdts = getBuffer().get(MAXIMUM_DATA_TRANSFER_SIZE_OFFSET);
-    return new MemoryPageUnitSize(controllerCapabilities.getMemoryPageSizeMinimum().toPow2Size(),
-        new Pow2Size(mdts));
+    if (mdts == 0) {
+      /* A value of 0h indicates no restrictions on transfer size. */
+      return MemoryPageUnitSize.MAX_VALUE;
+    } else {
+      return new MemoryPageUnitSize(controllerCapabilities.getMemoryPageSizeMinimum().toPow2Size(),
+          new Pow2Size(mdts));
+    }
   }
 
   public ControllerId getControllerId() {

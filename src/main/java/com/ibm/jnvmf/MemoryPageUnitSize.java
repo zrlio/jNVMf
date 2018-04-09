@@ -5,24 +5,17 @@ public class MemoryPageUnitSize {
   private final Pow2Size pageSize;
   private final Pow2Size count;
 
-  static final Pow2Size MINIMUM_PAGE_SIZE = new Pow2Size(12);
+  private static final Pow2Size MINIMUM_PAGE_SIZE = new Pow2Size(12);
+  static final MemoryPageUnitSize MAX_VALUE = new MemoryPageUnitSize(new Pow2Size(0),
+      new Pow2Size(Integer.SIZE - 2));
 
   public MemoryPageUnitSize(Pow2Size count) {
-    this.pageSize = MINIMUM_PAGE_SIZE;
-    this.count = count;
+    this(MINIMUM_PAGE_SIZE, count);
   }
 
   MemoryPageUnitSize(Pow2Size pageSize, Pow2Size count) {
     this.pageSize = pageSize;
     this.count = count;
-  }
-
-  public Pow2Size getPageSize() {
-    return pageSize;
-  }
-
-  Pow2Size value() {
-    return count;
   }
 
   public Pow2Size toPow2Size() {
