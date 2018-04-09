@@ -17,9 +17,6 @@
 
 package com.ibm.jnvmf;
 
-/**
- * NvmIoCommandCapsule.
- */
 public class NvmIoCommandCapsule extends NvmCommandCapsule<NvmIoCommandSqe> {
 
   NvmIoCommandCapsule(KeyedNativeBuffer buffer,
@@ -28,10 +25,6 @@ public class NvmIoCommandCapsule extends NvmCommandCapsule<NvmIoCommandSqe> {
     super(buffer, sqeFactory, additionalSgls, incapsuleDataOffset, incapsuleDataSize);
   }
 
-  /**
-   * Sets the SGL descriptor in the SQE.
-   * @param data the keyed SGL data block descriptor should be set to
-   */
   public void setSglDescriptor(KeyedNativeBuffer data) {
     //TODO: set incapsule data to zero size
     KeyedSglDataBlockDescriptor keyedSglDataBlockDescriptor =

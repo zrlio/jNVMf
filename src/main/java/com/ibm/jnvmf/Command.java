@@ -51,10 +51,6 @@ public abstract class Command<C extends CommandCapsule, R extends ResponseCapsul
     wr.setSend_flags(IbvSendWR.IBV_SEND_SIGNALED);
   }
 
-  /**
-   * Set RDMA send inline.
-   * @param sendInline if true send inline
-   */
   public void setSendInline(boolean sendInline) {
     if (sendInline) {
       LinkedList<IbvSge> sgList = wr.getSg_list();

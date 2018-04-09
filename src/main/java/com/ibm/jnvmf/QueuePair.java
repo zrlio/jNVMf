@@ -289,11 +289,6 @@ public abstract class QueuePair implements Freeable {
     }
   }
 
-  /**
-   * poll completion queue
-   * @return number of completed fabrics operations, i.e. two per command
-   * @throws IOException if fabrics poll fails
-   */
   public int poll() throws IOException {
     NvmfRdmaEndpoint.PollCq pollCq = this.pollCq.get();
     int polls = pollCq.execute().getPolls();
