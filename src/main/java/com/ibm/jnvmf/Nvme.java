@@ -20,8 +20,11 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 public class Nvme {
+  private static final long CONTROLLER_CONNECT_TIMEOUT = 1;
+  private static final TimeUnit CONTROLLER_CONNTECT_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
   private final NvmeQualifiedName hostNvmeQualifiedName;
 
@@ -39,7 +42,12 @@ public class Nvme {
   }
 
   public Controller connect(NvmfTransportId transportId) throws IOException {
-    return new Controller(hostNvmeQualifiedName, transportId);
+    return connect(transportId, CONTROLLER_CONNECT_TIMEOUT, CONTROLLER_CONNTECT_TIMEOUT_UNIT);
+  }
+
+  public Controller connect(NvmfTransportId transportId, long connectTimeout,
+      TimeUnit connectTimeoutUnit) throws IOException {
+    return new Controller(hostNvmeQualifiedName, transportId, connectTimeout, connectTimeoutUnit);
   }
 
   public NvmeQualifiedName getHostNvmeQualifiedName() {

@@ -50,13 +50,13 @@ public class Controller implements Freeable {
 
   private IdentifyControllerData identifyControllerData;
 
-  Controller(NvmeQualifiedName hostNvmeQualifiedName, NvmfTransportId transportId)
-      throws IOException {
+  Controller(NvmeQualifiedName hostNvmeQualifiedName, NvmfTransportId transportId,
+      long connectTimeout, TimeUnit connectTimeoutUnit) throws IOException {
     this.hostNvmeQualifiedName = hostNvmeQualifiedName;
     this.transportId = transportId;
     this.queueId = 1;
-    //FIXME
-    this.endpointGroup = new NvmfRdmaEndpointGroup(1000);
+    this.endpointGroup = new NvmfRdmaEndpointGroup(
+        (int)TimeUnit.MILLISECONDS.convert(connectTimeout, connectTimeoutUnit));
     this.endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
 
     //FIXME

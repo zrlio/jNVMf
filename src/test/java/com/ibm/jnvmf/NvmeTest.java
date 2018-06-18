@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -47,5 +48,6 @@ class NvmeTest {
         TestUtil.getPort());
     NvmfTransportId transportId = new NvmfTransportId(socketAddress, TestUtil.getSubsystemNQN());
     assertTrue(nvme.connect(transportId) != null);
+    assertTrue(nvme.connect(transportId, 5000, TimeUnit.MILLISECONDS) != null);
   }
 }
