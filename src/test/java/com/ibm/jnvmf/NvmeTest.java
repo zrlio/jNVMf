@@ -48,6 +48,6 @@ class NvmeTest {
         TestUtil.getPort());
     NvmfTransportId transportId = new NvmfTransportId(socketAddress, TestUtil.getSubsystemNQN());
     assertTrue(nvme.connect(transportId) != null);
-    assertTrue(nvme.connect(transportId, 5000, TimeUnit.MILLISECONDS) != null);
+    assertTrue(nvme.connect(transportId, 5000, TimeUnit.MILLISECONDS, true) != null);
   }
 }

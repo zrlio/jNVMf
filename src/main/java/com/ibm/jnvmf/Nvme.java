@@ -42,12 +42,14 @@ public class Nvme {
   }
 
   public Controller connect(NvmfTransportId transportId) throws IOException {
-    return connect(transportId, CONTROLLER_CONNECT_TIMEOUT, CONTROLLER_CONNTECT_TIMEOUT_UNIT);
+    return connect(transportId, CONTROLLER_CONNECT_TIMEOUT, CONTROLLER_CONNTECT_TIMEOUT_UNIT,
+        true);
   }
 
   public Controller connect(NvmfTransportId transportId, long connectTimeout,
-      TimeUnit connectTimeoutUnit) throws IOException {
-    return new Controller(hostNvmeQualifiedName, transportId, connectTimeout, connectTimeoutUnit);
+      TimeUnit connectTimeoutUnit, boolean dynamicId) throws IOException {
+    return new Controller(hostNvmeQualifiedName, transportId, connectTimeout, connectTimeoutUnit,
+        dynamicId);
   }
 
   public NvmeQualifiedName getHostNvmeQualifiedName() {
