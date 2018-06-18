@@ -18,16 +18,9 @@
 package com.ibm.jnvmf;
 
 import java.util.Objects;
+import java.util.UUID;
 
 public class NvmeQualifiedName {
-
-  private final String nqn;
-
-  public NvmeQualifiedName(String nqn) {
-    validate(nqn);
-    this.nqn = nqn;
-  }
-
   /*
    * Nvme Spec 1.3a - 7.9
    *
@@ -36,6 +29,18 @@ public class NvmeQualifiedName {
    * 2) nqn.2014-08.org.nvmexpress:uuid:128bitUUID (RFC4122)
    *
    */
+
+  private final String nqn;
+
+  public NvmeQualifiedName(String nqn) {
+    validate(nqn);
+    this.nqn = nqn;
+  }
+
+  public NvmeQualifiedName(UUID uuid) {
+    this.nqn = "nqn.2014-08.org.nvmexpress:uuid:" + uuid.toString();
+  }
+
   private static void validate(String nqn) {
     /* we only care about format 1 for now */
     if (!nqn.matches("nqn\\.\\d{4}-\\d{2}\\.[a-zA-Z0-9.-]*:.*")) {

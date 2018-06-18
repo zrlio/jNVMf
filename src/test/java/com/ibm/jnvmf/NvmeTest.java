@@ -30,9 +30,10 @@ import org.junit.jupiter.api.Test;
 class NvmeTest {
 
   @Test
-  void hostNQN() throws UnknownHostException {
+  void hostNQN() {
     Nvme nvme = new Nvme();
-    nvme.getHostNvmeQualifiedName();
+    NvmeQualifiedName uuidNqn = nvme.getHostNvmeQualifiedName();
+    assertTrue(uuidNqn.toString().startsWith("nqn.2014-08.org.nvmexpress:uuid:"));
 
     String nqn = "nqn.2014-08.com.example:nvme.host.sys.xyz";
     nvme = new Nvme(new NvmeQualifiedName(nqn));

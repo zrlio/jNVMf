@@ -20,6 +20,7 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class Nvme {
@@ -35,10 +36,8 @@ public class Nvme {
     this.hostNvmeQualifiedName = hostNvmeQualifiedName;
   }
 
-  public Nvme() throws UnknownHostException {
-    // TODO: use UUID
-    this(new NvmeQualifiedName("nqn.2014-08.com.example:"
-        + InetAddress.getLocalHost().getCanonicalHostName()));
+  public Nvme() {
+    this(new NvmeQualifiedName(UUID.randomUUID()));
   }
 
   public Controller connect(NvmfTransportId transportId) throws IOException {
