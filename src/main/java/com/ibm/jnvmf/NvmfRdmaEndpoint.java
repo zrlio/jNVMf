@@ -27,9 +27,10 @@ import com.ibm.disni.rdma.verbs.SVCPollCq;
 import com.ibm.disni.rdma.verbs.SVCPostRecv;
 
 import java.io.IOException;
-import java.net.URI;
+import java.net.SocketAddress;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.concurrent.TimeUnit;
 
 class NvmfRdmaEndpoint extends RdmaEndpoint {
 
@@ -47,7 +48,7 @@ class NvmfRdmaEndpoint extends RdmaEndpoint {
   }
 
   @Override
-  public synchronized void connect(URI uri) throws Exception {
+  public synchronized void connect(SocketAddress dst, int timeoutMs) throws Exception {
     if (getCqSize() == 0) {
       throw new IllegalArgumentException("CQ size 0");
     } else if (getRqSize() == 0) {
@@ -55,7 +56,7 @@ class NvmfRdmaEndpoint extends RdmaEndpoint {
     } else if (getSqSize() == 0) {
       throw new IllegalArgumentException("SQ size 0");
     }
-    super.connect(uri);
+    super.connect(dst, timeoutMs);
   }
 
   @Override

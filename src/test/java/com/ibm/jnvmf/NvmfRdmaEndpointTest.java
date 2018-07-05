@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -35,10 +36,11 @@ class NvmfRdmaEndpointTest {
 
   private Process process;
   private static final int RPING_DEFAULT_PORT = 7174;
+  private static final int DEFAULT_CONNECT_TIMEOUT = 10000; /* ms */
   private NvmfRdmaEndpointGroup endpointGroup;
 
   NvmfRdmaEndpointTest() throws IOException {
-    endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    endpointGroup = new NvmfRdmaEndpointGroup(2, TimeUnit.SECONDS);
     endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
   }
 
@@ -58,8 +60,7 @@ class NvmfRdmaEndpointTest {
     endpoint.setRqSize(64);
     endpoint.setSqSize(64);
     InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), port);
-    endpoint.connect(new URI(
-        "rdma://" + socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort()));
+    endpoint.connect(socketAddress, 10000);
     return endpoint;
   }
 
@@ -72,7 +73,7 @@ class NvmfRdmaEndpointTest {
   @Tag("rdma")
   @Test
   void checkArguments() throws Exception {
-    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2, TimeUnit.SECONDS);
     endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
     NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
     assertThrows(IllegalArgumentException.class, () -> endpoint.setSqSize(0));
@@ -84,14 +85,13 @@ class NvmfRdmaEndpointTest {
     assertThrows(IllegalArgumentException.class, () -> endpoint.setInlineDataSize(-1));
     InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
     assertThrows(IllegalArgumentException.class,
-        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-            ":" + socketAddress.getPort())));
+        () -> endpoint.connect(socketAddress, 10000));
   }
 
   @Tag("rdma")
   @Test
   void createQP() throws Exception {
-    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2000);
+    NvmfRdmaEndpointGroup endpointGroup = new NvmfRdmaEndpointGroup(2, TimeUnit.SECONDS);
     endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
     NvmfRdmaEndpoint endpoint = endpointGroup.createEndpoint();
     InetSocketAddress socketAddress = new InetSocketAddress(TestUtil.getLocalAddress(), 7174);
@@ -99,27 +99,23 @@ class NvmfRdmaEndpointTest {
     endpoint.setRqSize(16);
     endpoint.setCqSize(16);
     assertThrows(IOException.class,
-        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-            ":" + socketAddress.getPort())));
+        () -> endpoint.connect(socketAddress, DEFAULT_CONNECT_TIMEOUT));
     endpoint.setSqSize(16);
     endpoint.setRqSize(Integer.MAX_VALUE);
     endpoint.setCqSize(16);
     assertThrows(IOException.class,
-        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-            ":" + socketAddress.getPort())));
+        () -> endpoint.connect(socketAddress, DEFAULT_CONNECT_TIMEOUT));
     endpoint.setSqSize(16);
     endpoint.setRqSize(16);
     endpoint.setCqSize(Integer.MAX_VALUE);
     assertThrows(IOException.class,
-        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-            ":" + socketAddress.getPort())));
+        () -> endpoint.connect(socketAddress, DEFAULT_CONNECT_TIMEOUT));
     endpoint.setSqSize(16);
     endpoint.setRqSize(16);
     endpoint.setCqSize(16);
     endpoint.setInlineDataSize(Integer.MAX_VALUE);
     assertThrows(IOException.class,
-        () -> endpoint.connect(new URI("rdma://" + socketAddress.getAddress().getHostAddress() +
-            ":" + socketAddress.getPort())));
+        () -> endpoint.connect(socketAddress, DEFAULT_CONNECT_TIMEOUT));
   }
 
   @Tag("rdma")
@@ -141,7 +137,7 @@ class NvmfRdmaEndpointTest {
     KeyedNativeBufferPool bufferPool4 = endpoint2.getBufferPool(512);
     assertEquals(bufferPool, bufferPool4);
 
-    NvmfRdmaEndpointGroup endpointGroup1 = new NvmfRdmaEndpointGroup(2000);
+    NvmfRdmaEndpointGroup endpointGroup1 = new NvmfRdmaEndpointGroup(2, TimeUnit.SECONDS);
     endpointGroup1.init(new NvmfRdmaEndpointFactory(endpointGroup1));
     NvmfRdmaEndpoint endpoint3 = connect(endpointGroup1, port);
     KeyedNativeBufferPool bufferPool5 = endpoint3.getBufferPool(512);

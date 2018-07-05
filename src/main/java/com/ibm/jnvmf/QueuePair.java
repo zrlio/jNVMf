@@ -32,6 +32,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 // TODO check valid on public methods
 
@@ -62,7 +63,7 @@ public abstract class QueuePair implements Freeable {
 
   private ThreadLocal<NvmfRdmaEndpoint.PollCq> pollCq;
 
-  FabricsConnectResponseCqe connect() throws IOException {
+  FabricsConnectResponseCqe connect(long timeout, TimeUnit timeoutUnit) throws IOException {
     NativeBuffer buffer = new NativeByteBuffer(
         ByteBuffer.allocateDirect(RdmaCmRequestPrivateData.SIZE));
     RdmaCmRequestPrivateData privateData = new RdmaCmRequestPrivateData(buffer);
@@ -74,8 +75,8 @@ public abstract class QueuePair implements Freeable {
     InetSocketAddress socketAddress = controller.getTransportId().getAddress();
     try {
       //FIXME: rejected requests are not handled by DiSNI
-      endpoint.connect(new URI(
-          "rdma://" + socketAddress.getAddress().getHostAddress() + ":" + socketAddress.getPort()));
+      //FIXME: check for overflow
+      endpoint.connect(socketAddress, (int)TimeUnit.MILLISECONDS.convert(timeout, timeoutUnit));
     } catch (Exception exception) {
       throw new IOException(exception);
     }
@@ -188,7 +189,10 @@ public abstract class QueuePair implements Freeable {
       freeCommandId.add((short) i);
     }
 
-    connect();
+    //FIXME: we don't want to introduce yet another argument to the constructor
+    // we need to change the way the buffer management works and get rid of
+    // additionalSgls and inCapsuleDataSize, then we can introduce a timeout arg
+    connect(10, TimeUnit.SECONDS);
     this.valid = true;
   }
 

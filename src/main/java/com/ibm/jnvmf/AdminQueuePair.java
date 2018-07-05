@@ -18,6 +18,7 @@
 package com.ibm.jnvmf;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 public class AdminQueuePair extends QueuePair {
 
@@ -31,8 +32,8 @@ public class AdminQueuePair extends QueuePair {
   }
 
   @Override
-  FabricsConnectResponseCqe connect() throws IOException {
-    FabricsConnectResponseCqe cqe = super.connect();
+  FabricsConnectResponseCqe connect(long timeout, TimeUnit timeoutUnit) throws IOException {
+    FabricsConnectResponseCqe cqe = super.connect(timeout, timeoutUnit);
     getController().setControllerId(cqe.success().getControllerId());
     return cqe;
   }

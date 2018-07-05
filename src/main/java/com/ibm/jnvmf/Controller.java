@@ -55,8 +55,7 @@ public class Controller implements Freeable {
     this.hostNvmeQualifiedName = hostNvmeQualifiedName;
     this.transportId = transportId;
     this.queueId = 1;
-    this.endpointGroup = new NvmfRdmaEndpointGroup(
-        (int)TimeUnit.MILLISECONDS.convert(connectTimeout, connectTimeoutUnit));
+    this.endpointGroup = new NvmfRdmaEndpointGroup(connectTimeout, connectTimeoutUnit);
     this.endpointGroup.init(new NvmfRdmaEndpointFactory(endpointGroup));
 
     if (dynamicId) {

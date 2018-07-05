@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 class NvmfRdmaEndpointGroup extends RdmaEndpointGroup<NvmfRdmaEndpoint> {
 
@@ -69,8 +70,9 @@ class NvmfRdmaEndpointGroup extends RdmaEndpointGroup<NvmfRdmaEndpoint> {
 
   private final Map<BufferPoolKey, PdMemoryPool> bufferPools;
 
-  public NvmfRdmaEndpointGroup(int timeout) throws IOException {
-    super(timeout);
+  public NvmfRdmaEndpointGroup(long timeout, TimeUnit timeoutUnit) throws IOException {
+    // FIXME: check for overflow
+    super((int)TimeUnit.MILLISECONDS.convert(timeout, timeoutUnit));
     this.bufferPools = new ConcurrentHashMap<>();
   }
 
