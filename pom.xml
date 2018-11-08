@@ -186,6 +186,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.12</version>
+        <configuration>
+            <licenses>
+                <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+                    <licenseFamilyCategory>AL20</licenseFamilyCategory>
+                    <licenseFamilyName>Apache License, 2.0</licenseFamilyName>
+                </license>
+                <license implementation="org.apache.rat.analysis.license.SimplePatternBasedLicense">
+                    <licenseFamilyCategory>LGPL2</licenseFamilyCategory>
+                    <licenseFamilyName>Lesser GNU General Public License, version 2.1</licenseFamilyName>
+                    <patterns>
+                        <pattern>This library is free software; you can redistribute it and/or</pattern>
+                        <pattern>modify it under the terms of the GNU Lesser General Public</pattern>
+                        <pattern>version 2.1 of the License, or (at your option) any later version.</pattern>
+                    </patterns>
+                </license>
+            </licenses>
+            <licenseFamilies>
+                <licenseFamily implementation="org.apache.rat.license.SimpleLicenseFamily">
+                    <familyName>Lesser GNU General Public License, version 2.1</familyName>
+                </licenseFamily>
+            </licenseFamilies>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
