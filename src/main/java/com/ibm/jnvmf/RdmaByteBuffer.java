@@ -17,7 +17,7 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.verbs.IbvMr;
+import com.ibm.disni.verbs.IbvMr;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

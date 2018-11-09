@@ -17,10 +17,10 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.verbs.IbvMr;
-import com.ibm.disni.rdma.verbs.IbvSendWR;
-import com.ibm.disni.rdma.verbs.IbvWC;
-import com.ibm.disni.rdma.verbs.SVCPostSend;
+import com.ibm.disni.verbs.IbvMr;
+import com.ibm.disni.verbs.IbvSendWR;
+import com.ibm.disni.verbs.IbvWC;
+import com.ibm.disni.verbs.SVCPostSend;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

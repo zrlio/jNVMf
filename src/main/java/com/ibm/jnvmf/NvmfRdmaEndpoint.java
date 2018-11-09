@@ -17,14 +17,14 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.RdmaEndpoint;
-import com.ibm.disni.rdma.verbs.IbvRecvWR;
-import com.ibm.disni.rdma.verbs.IbvSge;
-import com.ibm.disni.rdma.verbs.IbvWC;
-import com.ibm.disni.rdma.verbs.RdmaCmId;
-import com.ibm.disni.rdma.verbs.RdmaConnParam;
-import com.ibm.disni.rdma.verbs.SVCPollCq;
-import com.ibm.disni.rdma.verbs.SVCPostRecv;
+import com.ibm.disni.RdmaEndpoint;
+import com.ibm.disni.verbs.IbvRecvWR;
+import com.ibm.disni.verbs.IbvSge;
+import com.ibm.disni.verbs.IbvWC;
+import com.ibm.disni.verbs.RdmaCmId;
+import com.ibm.disni.verbs.RdmaConnParam;
+import com.ibm.disni.verbs.SVCPollCq;
+import com.ibm.disni.verbs.SVCPostRecv;
 
 import java.io.IOException;
 import java.net.SocketAddress;

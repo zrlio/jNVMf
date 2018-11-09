@@ -17,9 +17,9 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.verbs.IbvSendWR;
-import com.ibm.disni.rdma.verbs.IbvSge;
-import com.ibm.disni.rdma.verbs.SVCPostSend;
+import com.ibm.disni.verbs.IbvSendWR;
+import com.ibm.disni.verbs.IbvSge;
+import com.ibm.disni.verbs.SVCPostSend;
 
 import java.io.IOException;
 import java.util.Arrays;

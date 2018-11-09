@@ -17,12 +17,12 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.RdmaCqProvider;
-import com.ibm.disni.rdma.RdmaEndpointGroup;
-import com.ibm.disni.rdma.verbs.IbvCQ;
-import com.ibm.disni.rdma.verbs.IbvPd;
-import com.ibm.disni.rdma.verbs.IbvQP;
-import com.ibm.disni.rdma.verbs.IbvQPInitAttr;
+import com.ibm.disni.RdmaCqProvider;
+import com.ibm.disni.RdmaEndpointGroup;
+import com.ibm.disni.verbs.IbvCQ;
+import com.ibm.disni.verbs.IbvPd;
+import com.ibm.disni.verbs.IbvQP;
+import com.ibm.disni.verbs.IbvQPInitAttr;
 
 import java.io.IOException;
 import java.nio.ByteOrder;

@@ -17,8 +17,8 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.verbs.SVCPostRecv;
-import com.ibm.disni.rdma.verbs.StatefulVerbCall;
+import com.ibm.disni.verbs.SVCPostRecv;
+import com.ibm.disni.verbs.StatefulVerbCall;
 
 import java.io.IOException;
 

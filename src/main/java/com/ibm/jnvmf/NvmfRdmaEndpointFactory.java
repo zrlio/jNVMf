@@ -17,8 +17,8 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.RdmaEndpointFactory;
-import com.ibm.disni.rdma.verbs.RdmaCmId;
+import com.ibm.disni.RdmaEndpointFactory;
+import com.ibm.disni.verbs.RdmaCmId;
 
 import java.io.IOException;
 

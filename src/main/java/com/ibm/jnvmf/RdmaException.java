@@ -17,7 +17,7 @@
 
 package com.ibm.jnvmf;
 
-import com.ibm.disni.rdma.verbs.IbvWC;
+import com.ibm.disni.verbs.IbvWC;
 
 public class RdmaException extends Exception {
 

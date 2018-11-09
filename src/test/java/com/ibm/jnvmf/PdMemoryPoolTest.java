@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.ibm.disni.rdma.verbs.IbvContext;
-import com.ibm.disni.rdma.verbs.IbvPd;
-import com.ibm.disni.rdma.verbs.RdmaCm;
-import com.ibm.disni.rdma.verbs.RdmaCmEvent;
-import com.ibm.disni.rdma.verbs.RdmaCmId;
-import com.ibm.disni.rdma.verbs.RdmaEventChannel;
+import com.ibm.disni.verbs.IbvContext;
+import com.ibm.disni.verbs.IbvPd;
+import com.ibm.disni.verbs.RdmaCm;
+import com.ibm.disni.verbs.RdmaCmEvent;
+import com.ibm.disni.verbs.RdmaCmId;
+import com.ibm.disni.verbs.RdmaEventChannel;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -53,10 +53,7 @@ class PdMemoryPoolTest {
 
     InetAddress address = InetAddress.getByName(TestUtil.getLocalAddress());
     InetSocketAddress socketAddress = new InetSocketAddress(address, 12345);
-    int ret = cmId.resolveAddr(null, socketAddress, 2000);
-    if (ret < 0) {
-      throw new IOException("cannot resolve address: " + ret);
-    }
+    cmId.resolveAddr(null, socketAddress, 2000);
 
     RdmaCmEvent cmEvent = eventChannel.getCmEvent(-1);
     if (cmEvent == null) {
@@ -66,10 +63,7 @@ class PdMemoryPoolTest {
     }
     cmEvent.ackEvent();
 
-    ret = cmId.resolveRoute(2000);
-    if (ret < 0) {
-      throw new IOException("cannot resolve route: " + ret);
-    }
+    cmId.resolveRoute(2000);
 
     cmEvent = eventChannel.getCmEvent(-1);
     if (cmEvent == null) {
