@@ -17,15 +17,11 @@
 
 package com.ibm.jnvmf;
 
-public abstract class AdminCommand<C extends AdminCommandCapsule>
-    extends Command<C, AdminResponseCapsule> {
+public abstract class AdminCommand<C extends AdminCommandCapsule, R extends ResponseCapsule>
+    extends Command<C, R> {
 
   AdminCommand(AdminQueuePair queuePair, C command) {
     super(queuePair, command);
   }
 
-  @Override
-  public Response<AdminResponseCapsule> newResponse() {
-    return new Response<>(new AdminResponseCapsule());
-  }
 }

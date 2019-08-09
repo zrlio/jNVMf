@@ -24,6 +24,8 @@ class AdminCommandOpcode extends CommandOpcode {
 
   static final AdminCommandOpcode IDENTIFY =
       new AdminCommandOpcode(false, 1, DataTransfer.CONTROLLER_TO_HOST);
+  static final AdminCommandOpcode ASYNCHRONOUS_EVENT_REQUEST =
+      new AdminCommandOpcode(false, 3, DataTransfer.NO);
   static final AdminCommandOpcode KEEP_ALIVE =
       new AdminCommandOpcode(false, 6, DataTransfer.NO);
 

@@ -19,9 +19,15 @@ package com.ibm.jnvmf;
 
 import java.io.IOException;
 
-public class AdminKeepAliveCommand extends AdminCommand<AdminKeepAliveCommandCapsule> {
+public class AdminKeepAliveCommand extends
+    AdminCommand<AdminKeepAliveCommandCapsule, AdminResponseCapsule> {
 
   AdminKeepAliveCommand(AdminQueuePair queuePair) throws IOException {
     super(queuePair, new AdminKeepAliveCommandCapsule(queuePair.allocateCommandCapsule()));
+  }
+
+  @Override
+  public Response<AdminResponseCapsule> newResponse() {
+    return new Response<>(new AdminResponseCapsule());
   }
 }

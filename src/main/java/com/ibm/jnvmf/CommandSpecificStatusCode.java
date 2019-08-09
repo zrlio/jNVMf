@@ -37,6 +37,9 @@ public class CommandSpecificStatusCode extends StatusCode {
   public final Value ABORT_COMMAND_LIMIT_EXCEEDED = new Value(0x3,
       ": The number of concurrently outstanding Abort commands has "
           + "exceeded the limit indicated in the Identify Controller data structure.");
+  public final Value ASYNCHRONOUS_EVENT_REQUEST_LIMIT_EXCEEDED = new Value(0x5,
+                "The number of concurrently outstanding "
+                    + "Asynchronous Event Request commands has been exceeded.");
 
   // CHECKSTYLE_ON: MemberNameCheck
 }

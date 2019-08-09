@@ -20,10 +20,15 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public class AdminIdentifyActiveNamespaceIdsCommand extends
-    AdminCommand<AdminIdentifyActiveNamespacesCommandCapsule> {
+    AdminCommand<AdminIdentifyActiveNamespacesCommandCapsule, AdminResponseCapsule> {
 
   AdminIdentifyActiveNamespaceIdsCommand(AdminQueuePair queuePair) throws IOException {
     super(queuePair,
         new AdminIdentifyActiveNamespacesCommandCapsule(queuePair.allocateCommandCapsule()));
+  }
+
+  @Override
+  public Response<AdminResponseCapsule> newResponse() {
+    return new Response<>(new AdminResponseCapsule());
   }
 }
