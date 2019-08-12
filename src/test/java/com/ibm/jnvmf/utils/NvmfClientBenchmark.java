@@ -224,60 +224,7 @@ public class NvmfClientBenchmark {
         "PCI Subsystem Vendor ID: " + identifyControllerData.getPciSubsystemVendorId() + "\n" +
         "Serial Number: " + identifyControllerData.getSerialNumber() + "\n" +
         "Model Number: " + identifyControllerData.getModelNumber() + "\n" +
-        "Firmware Revision: " + identifyControllerData.getFirmwareRevision() + "\n" +
-        "Maximum Data Transfer Size: " + identifyControllerData.getMaximumDataTransferSize() + "\n"
-        +
-        "Controller ID: " + identifyControllerData.getControllerId().toShort() + "\n" +
-        "NVMe Version: " + identifyControllerData.getNvmeVersion() + "\n" +
-        "Required Submission Queue Entry Size: " + identifyControllerData
-        .getRequiredSubmissionQueueEntrySize() + "\n" +
-        "Maximum Submission Queue Entry Size: " + identifyControllerData
-        .getMaximumSubmissionQueueEntrySize() + "\n" +
-        "Required Completion Queue Entry Size: " + identifyControllerData
-        .getRequiredCompletionQueueEntrySize() + "\n" +
-        "Maximum Completion Queue Entry Size: " + identifyControllerData
-        .getMaximumCompletionQueueEntrySize() + "\n" +
-        "IO Queue Command Capsule Size: " + identifyControllerData
-        .getIoQueueCommandCapsuleSupportedSize() + "\n" +
-        "IO Queue Response Capsule Size: " + identifyControllerData
-        .getIoQueueResponseCapsuleSupportedSize() + "\n" +
-        "In Capsule Data Offset: " + identifyControllerData.getInCapsuleDataOffset() + "\n" +
-        "Maximum SGL Data Block Descriptors: " + identifyControllerData
-        .getMaximumSglDataBlockDescriptors());
-    System.out.println("--------------------------------------------------------");
-    ControllerCapabilities controllerCapabilities = controller.getControllerCapabilities();
-    System.out.println("Controller Capabilities: \n" +
-        "Maximum Queue Entries Supported: " + controllerCapabilities
-        .getMaximumQueueEntriesSupported() + "\n" +
-        "Contiguous Queues Required: " + controllerCapabilities.getContiguousQueuesRequired() + "\n"
-        +
-        "Arbitration Mechanism Supported: ");
-    controllerCapabilities.getArbitrationMechanismSupported()
-        .forEach(value -> System.out.print(value.getDescription() + ", "));
-    System.out.println("\n" +
-        "Timeout: " + controllerCapabilities.getTimeout() + " " + ControllerCapabilities
-        .getTimeoutUnit().toString().toLowerCase() + "\n" +
-        "NVM Subsystem Reset Supported: " + controllerCapabilities.getNvmSubsystemResetSupported()
-        + "\n" +
-        "Memory Page Size Minimum: " + controllerCapabilities.getMemoryPageSizeMinimum() + "\n" +
-        "Memory Page Size Maximum: " + controllerCapabilities.getMemoryPageSizeMaximum());
-    System.out.println("--------------------------------------------------------");
-    List<Namespace> namespaces = controller.getActiveNamespaces();
-    if (namespaces.isEmpty()) {
-      throw new IllegalStateException("No namespace found");
-    }
-    System.out.println("Namespaces:");
-    for (Namespace namespace : namespaces) {
-      System.out.println("Id: " + namespace.getIdentifier().toInt());
-      IdentifyNamespaceData namespaceData = namespace.getIdentifyNamespaceData();
-      System.out.println("Size: " + namespaceData.getNamespaceSize());
-      System.out.println("Capacity: " + namespaceData.getNamespaceCapacity());
-      LbaFormat lbaFormat = namespaceData.getFormattedLbaSize();
-      System.out.println("Formatted LBA: " +
-          "\n\tData Size: " + lbaFormat.getLbaDataSize() +
-          "\n\tMetadata Size: " + lbaFormat.getMetadataSize() +
-          "\n\tRelative Performance: " + lbaFormat.getRelativePerformance().toInt());
-    }
+        "Controller ID: " + identifyControllerData.getControllerId().toShort());
     System.out.println("--------------------------------------------------------");
     int inlineDataSize = 0;
     if (inline) {
