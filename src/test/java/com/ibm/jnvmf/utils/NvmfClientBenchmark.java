@@ -15,7 +15,7 @@
  *
  */
 
-package com.ibm.jnvmf.benchmark;
+package com.ibm.jnvmf.utils;
 
 import com.ibm.jnvmf.Command;
 import com.ibm.jnvmf.Controller;
