@@ -6,7 +6,7 @@ public class AdminAsynchronousEventRequestCommand extends
     AdminCommand<AdminAsynchronousEventRequestCommandCapsule,
         AdminAsynchronousEventRequestResponseCapsule> {
 
-  AdminAsynchronousEventRequestCommand(AdminQueuePair queuePair) throws IOException {
+  public AdminAsynchronousEventRequestCommand(AdminQueuePair queuePair) throws IOException {
     super(queuePair,
         new AdminAsynchronousEventRequestCommandCapsule(queuePair.allocateCommandCapsule()));
   }

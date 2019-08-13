@@ -1,5 +1,11 @@
 package com.ibm.jnvmf.utils;
 
+import com.ibm.jnvmf.AdminAsynchronousEventRequestCommand;
+import com.ibm.jnvmf.AdminAsynchronousEventRequestResponseCapsule;
+import com.ibm.jnvmf.AdminAsynchronousEventRequestResponseCqe;
+import com.ibm.jnvmf.AdminQueuePair;
+import com.ibm.jnvmf.AsynchronousEventInformation;
+import com.ibm.jnvmf.AsynchronousEventType;
 import com.ibm.jnvmf.Controller;
 import com.ibm.jnvmf.ControllerCapabilities;
 import com.ibm.jnvmf.IdentifyControllerData;
@@ -9,8 +15,13 @@ import com.ibm.jnvmf.Namespace;
 import com.ibm.jnvmf.Nvme;
 import com.ibm.jnvmf.NvmeQualifiedName;
 import com.ibm.jnvmf.NvmfTransportId;
+import com.ibm.jnvmf.OperationCallback;
+import com.ibm.jnvmf.RdmaException;
+import com.ibm.jnvmf.Response;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.cli.CommandLine;
@@ -28,7 +39,8 @@ public class NvmfDiagnostics {
   private Nvme nvme;
 
   private enum Test {
-    INFO
+    INFO,
+    ASYNCEVENT
   }
 
   private interface TestCall {
@@ -38,6 +50,7 @@ public class NvmfDiagnostics {
   private final TestCall[] tests = new TestCall[Test.values().length];
   {
     tests[Test.INFO.ordinal()] = new PrintControllerInfo();
+    tests[Test.ASYNCEVENT.ordinal()] = new GetAsyncEvent();
   }
 
   NvmfDiagnostics(String[] args) throws IOException, TimeoutException {
@@ -47,7 +60,11 @@ public class NvmfDiagnostics {
     Option port = Option.builder("p").desc("port").required().hasArg().build();
     Option subsystemNQN = Option.builder("nqn").desc("subsystem NVMe qualified name").hasArg()
         .build();
-    Option testOption = Option.builder("t").desc("info|test").hasArg().build();
+    StringBuilder testOptions = new StringBuilder();
+    for (Test t  : Test.values()) {
+      testOptions.append(t.name() + ", ");
+    }
+    Option testOption = Option.builder("t").desc(testOptions.toString()).hasArg().build();
 
     options.addOption(address);
     options.addOption(port);
@@ -68,13 +85,14 @@ public class NvmfDiagnostics {
         if (test == null) {
           throw new ParseException("No test option with name " + testOption.getOpt());
         }
+      } else {
+        /* default test is info */
+        test = Test.INFO;
       }
     } catch (ParseException e) {
       formatter.printHelp("NvmfDiagnostics", options);
       System.exit(-1);
     }
-    /* default test is info */
-    test = Test.INFO;
 
     NvmfTransportId transportId;
     InetSocketAddress socketAddress = new InetSocketAddress(line.getOptionValue(address.getOpt()),
@@ -147,21 +165,99 @@ public class NvmfDiagnostics {
       System.out.println("--------------------------------------------------------");
       List<Namespace> namespaces = controller.getActiveNamespaces();
       if (namespaces.isEmpty()) {
-        throw new IllegalStateException("No namespace found");
-      }
-      System.out.println("Namespaces:");
-      for (Namespace namespace : namespaces) {
-        System.out.println("Id: " + namespace.getIdentifier().toInt());
-        IdentifyNamespaceData namespaceData = namespace.getIdentifyNamespaceData();
-        System.out.println("Size: " + namespaceData.getNamespaceSize());
-        System.out.println("Capacity: " + namespaceData.getNamespaceCapacity());
-        LbaFormat lbaFormat = namespaceData.getFormattedLbaSize();
-        System.out.println("Formatted LBA: " +
-            "\n\tData Size: " + lbaFormat.getLbaDataSize() +
-            "\n\tMetadata Size: " + lbaFormat.getMetadataSize() +
-            "\n\tRelative Performance: " + lbaFormat.getRelativePerformance().toInt());
+        System.out.println("No namespace found");
+      } else {
+        System.out.println("Namespaces:");
+        for (Namespace namespace : namespaces) {
+          System.out.println("Id: " + namespace.getIdentifier().toInt());
+          IdentifyNamespaceData namespaceData = namespace.getIdentifyNamespaceData();
+          System.out.println("Size: " + namespaceData.getNamespaceSize());
+          System.out.println("Capacity: " + namespaceData.getNamespaceCapacity());
+          LbaFormat lbaFormat = namespaceData.getFormattedLbaSize();
+          System.out.println("Formatted LBA: " +
+              "\n\tData Size: " + lbaFormat.getLbaDataSize() +
+              "\n\tMetadata Size: " + lbaFormat.getMetadataSize() +
+              "\n\tRelative Performance: " + lbaFormat.getRelativePerformance().toInt());
+        }
       }
       System.out.println("--------------------------------------------------------");
+    }
+  }
+
+  class GetAsyncEvent implements TestCall {
+
+    @Override
+    public void call() throws IOException {
+      AdminQueuePair adminQueuePair = controller.getAdminQueue();
+
+      AdminAsynchronousEventRequestCommand asynchronousEventRequestCommand =
+          new AdminAsynchronousEventRequestCommand(adminQueuePair);
+      asynchronousEventRequestCommand.setCallback(new OperationCallback() {
+        @Override
+        public void onStart() {
+          System.out.println("Sending Asynchronous Event Request...");
+        }
+
+        @Override
+        public void onComplete() {
+          System.out.println("Command completed waiting for event...");
+        }
+
+        @Override
+        public void onFailure(RdmaException exception) {
+          System.out.println(exception.getMessage());
+          System.exit(-1);
+        }
+      });
+
+      Response<AdminAsynchronousEventRequestResponseCapsule> asychronousEventRequestResponse =
+          asynchronousEventRequestCommand.newResponse();
+      asychronousEventRequestResponse.setCallback(new OperationCallback() {
+        @Override
+        public void onStart() { }
+
+        @Override
+        public void onComplete() {
+          AdminAsynchronousEventRequestResponseCapsule response =
+              asychronousEventRequestResponse.getResponseCapsule();
+          AdminAsynchronousEventRequestResponseCqe asynchronousEventRequestCqe =
+              response.getCompletionQueueEntry();
+          System.out.println("Asynchronous Event:");
+          System.out.println("\tLog Page Identifier: " +
+              asynchronousEventRequestCqe.getLogPageIdentifier().toByte());
+          AsynchronousEventType.Value eventType =
+              asynchronousEventRequestCqe.getAsynchronousEventType();
+          System.out.println("\tType: " + eventType.toInt() + " - " + eventType.getDescription());
+          AsynchronousEventInformation.Value eventInformation =
+              asynchronousEventRequestCqe.getAsynchronousEventInformation();
+          System.out.println("\tInformation: " + eventInformation.toInt() + " - "
+              + eventInformation.getDescription());
+          System.out.println();
+
+          /* TODO: Get Log Page */
+          try {
+            asynchronousEventRequestCommand.execute(asychronousEventRequestResponse);
+          } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(-1);
+          }
+        }
+
+        @Override
+        public void onFailure(RdmaException exception) {
+          System.out.println(exception.getMessage());
+          System.exit(-1);
+        }
+      });
+      asynchronousEventRequestCommand.execute(asychronousEventRequestResponse);
+      Instant start = Instant.now();
+      while (true) {
+        adminQueuePair.poll();
+        if (Duration.between(start, Instant.now()).toMillis() > 60000) {
+          controller.keepAlive();
+          start = Instant.now();
+        }
+      }
     }
   }
 
