@@ -3,7 +3,7 @@ package com.ibm.jnvmf;
 import java.io.IOException;
 
 public class AdminAsynchronousEventRequestCommand extends
-    AdminCommand<AdminAsynchronousEventRequestCommandCapsule,
+    Command<AdminAsynchronousEventRequestCommandCapsule,
         AdminAsynchronousEventRequestResponseCapsule> {
 
   public AdminAsynchronousEventRequestCommand(AdminQueuePair queuePair) throws IOException {
