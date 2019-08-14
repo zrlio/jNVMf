@@ -24,4 +24,8 @@ public abstract class NvmCommandCapsule<SqeT extends NvmSubmissionQueueEntry> ex
       int additionalSgls, int incapsuleDataOffset, int incapsuleDataSize) {
     super(buffer, sqeFactory, additionalSgls, incapsuleDataOffset, incapsuleDataSize);
   }
+
+  NvmCommandCapsule(KeyedNativeBuffer buffer, SubmissionQueueEntryFactory<SqeT> sqeFactory) {
+    super(buffer, sqeFactory);
+  }
 }
