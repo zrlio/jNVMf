@@ -33,11 +33,11 @@ public class LogPageIdentifier {
   /* 0x80 - 0xBF I/O Command Set Specific */
   /* 0xC0 - 0xFF Vendor Specific */
 
-  public LogPageIdentifier(byte id) {
+  LogPageIdentifier(byte id) {
     this.id = id;
   }
 
-  public short toByte() {
+  public byte toByte() {
     return id;
   }
 

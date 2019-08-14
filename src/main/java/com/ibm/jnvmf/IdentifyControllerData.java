@@ -41,6 +41,9 @@ public final class IdentifyControllerData extends NativeData<KeyedNativeBuffer> 
   /* Only since NVMe 1.2 otherwise zero */
   private static final int VERSION_OFFSET = 80;
 
+  private static final int LOG_PAGE_ATTRIBUTES_OFFSET = 261;
+  private static final int ERROR_LOG_PAGE_ENTRIES = 262;
+
   private static final int SUBMISSION_QUEUE_ENTRY_SIZE = 512;
   private static final int REQUIRED_SQE_ENTRY_SIZE_BITOFFSET_START = 0;
   private static final int REQUIRED_SQE_ENTRY_SIZE_BITOFFSET_END = 3;
@@ -161,6 +164,54 @@ public final class IdentifyControllerData extends NativeData<KeyedNativeBuffer> 
             MAXIMUM_CQE_ENTRY_SIZE_BITOFFSET_END));
   }
 
+  public static class LogPageAttributes {
+    private static final int SMART_HEALTH_INFORMATION_SUPPORT_BITOFFSET = 0;
+    private static final int COMMANDS_SUPPORTED_AND_EFFECTS_LOG_PAGE_SUPPORT_BITOFFSET = 1;
+    private static final int GET_LOG_PAGE_EXTENDED_DATA_SUPPORT_BITOFFSET = 2;
+    private static final int TELEMETRY_HOST_CONTROLLER_INITIATED_SUPPORT_BITOFFSET = 3;
+
+    private final boolean smartHealthInformationSupport;
+    private final boolean commandsSupportedAndEffectsLogPageSupport;
+    private final boolean getLogPageExtendedDataSupport;
+    private final boolean telemetryHostControllerInitiatedSupport;
+
+    private LogPageAttributes(int raw) {
+      this.smartHealthInformationSupport =
+          BitUtil.getBit(raw, SMART_HEALTH_INFORMATION_SUPPORT_BITOFFSET);
+      this.commandsSupportedAndEffectsLogPageSupport =
+          BitUtil.getBit(raw, COMMANDS_SUPPORTED_AND_EFFECTS_LOG_PAGE_SUPPORT_BITOFFSET);
+      this.getLogPageExtendedDataSupport =
+          BitUtil.getBit(raw, GET_LOG_PAGE_EXTENDED_DATA_SUPPORT_BITOFFSET);
+      this.telemetryHostControllerInitiatedSupport =
+          BitUtil.getBit(raw, TELEMETRY_HOST_CONTROLLER_INITIATED_SUPPORT_BITOFFSET);
+    }
+
+    public boolean getSmartHealthInformationSupport() {
+      return smartHealthInformationSupport;
+    }
+
+    public boolean getCommandsSupportedAndEffectsLogPageSupport() {
+      return commandsSupportedAndEffectsLogPageSupport;
+    }
+
+    public boolean hasGetLogPageExtendedDataSupport() {
+      return getLogPageExtendedDataSupport;
+    }
+
+    public boolean getTelemetryHostControllerInitiatedSupport() {
+      return telemetryHostControllerInitiatedSupport;
+    }
+  }
+
+  public LogPageAttributes getLogPageAttributes() {
+    return new LogPageAttributes(getBuffer().get(LOG_PAGE_ATTRIBUTES_OFFSET));
+  }
+
+  public int getErrorLogPageEntries() {
+    /* 0-based */
+    return getBuffer().get(ERROR_LOG_PAGE_ENTRIES) + 1;
+  }
+
   public long getIoQueueCommandCapsuleSupportedSize() {
     /*
      * NVMf Spec 1.0 - 4.1
@@ -197,4 +248,5 @@ public final class IdentifyControllerData extends NativeData<KeyedNativeBuffer> 
   void initialize() {
 
   }
+
 }

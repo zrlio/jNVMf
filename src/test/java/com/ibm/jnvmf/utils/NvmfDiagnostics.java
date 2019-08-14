@@ -3,15 +3,24 @@ package com.ibm.jnvmf.utils;
 import com.ibm.jnvmf.AdminAsynchronousEventRequestCommand;
 import com.ibm.jnvmf.AdminAsynchronousEventRequestResponseCapsule;
 import com.ibm.jnvmf.AdminAsynchronousEventRequestResponseCqe;
+import com.ibm.jnvmf.AdminGetLogPageCommand;
 import com.ibm.jnvmf.AdminQueuePair;
+import com.ibm.jnvmf.AdminResponseCapsule;
 import com.ibm.jnvmf.AsynchronousEventInformation;
 import com.ibm.jnvmf.AsynchronousEventType;
+import com.ibm.jnvmf.ChangedNamespaceListLogPage;
 import com.ibm.jnvmf.Controller;
 import com.ibm.jnvmf.ControllerCapabilities;
+import com.ibm.jnvmf.ErrorInformationLogEntry;
+import com.ibm.jnvmf.ErrorInformationLogPage;
 import com.ibm.jnvmf.IdentifyControllerData;
 import com.ibm.jnvmf.IdentifyNamespaceData;
+import com.ibm.jnvmf.KeyedNativeBuffer;
 import com.ibm.jnvmf.LbaFormat;
+import com.ibm.jnvmf.LogPage;
+import com.ibm.jnvmf.LogPageIdentifier;
 import com.ibm.jnvmf.Namespace;
+import com.ibm.jnvmf.NamespaceIdentifier;
 import com.ibm.jnvmf.Nvme;
 import com.ibm.jnvmf.NvmeQualifiedName;
 import com.ibm.jnvmf.NvmfTransportId;
@@ -20,6 +29,7 @@ import com.ibm.jnvmf.RdmaException;
 import com.ibm.jnvmf.Response;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -53,7 +63,7 @@ public class NvmfDiagnostics {
     tests[Test.ASYNCEVENT.ordinal()] = new GetAsyncEvent();
   }
 
-  NvmfDiagnostics(String[] args) throws IOException, TimeoutException {
+  private NvmfDiagnostics(String[] args) throws IOException, TimeoutException {
 
     Options options = new Options();
     Option address = Option.builder("a").required().desc("ip address").hasArg().build();
@@ -103,7 +113,7 @@ public class NvmfDiagnostics {
     connect(transportId);
   }
 
-  void connect(NvmfTransportId tid) throws IOException, TimeoutException {
+  private void connect(NvmfTransportId tid) throws IOException, TimeoutException {
     nvme = new Nvme();
     controller = nvme.connect(tid);
     controller.getControllerConfiguration().setEnable(true);
@@ -111,8 +121,120 @@ public class NvmfDiagnostics {
     controller.waitUntilReady();
   }
 
-  void run() throws IOException {
+  private void run() throws IOException {
     tests[test.ordinal()].call();
+  }
+
+  private boolean stopPoll = false;
+
+  private void getLogPage(LogPageIdentifier logPageIdentifier) throws IOException {
+    AdminQueuePair adminQueuePair = controller.getAdminQueue();
+    /* TODO: make configurable */
+    ByteBuffer buffer = ByteBuffer.allocateDirect(4096);
+    KeyedNativeBuffer logPageBuffer = adminQueuePair.registerMemory(buffer);
+
+
+
+    AdminGetLogPageCommand adminGetLogPageCommand =
+        new AdminGetLogPageCommand(adminQueuePair);
+    adminGetLogPageCommand.setCallback(new OperationCallback() {
+      @Override
+      public void onStart() {
+        System.out.println("Sending Get Loge Page command...");
+      }
+
+      @Override
+      public void onComplete() { }
+
+      @Override
+      public void onFailure(RdmaException exception) {
+        System.out.println(exception.getMessage());
+        stopPoll = true;
+      }
+    });
+    Response<AdminResponseCapsule> adminGetLogPageResponse =
+        adminGetLogPageCommand.newResponse();
+
+    LogPage logPage = null;
+    if (logPageIdentifier.equals(LogPageIdentifier.ERROR_INFORMATION)) {
+      logPage = new ErrorInformationLogPage(logPageBuffer,
+          logPageBuffer.capacity() / ErrorInformationLogEntry.SIZE);
+    } else if (logPageIdentifier.equals(LogPageIdentifier.CHANGED_NAMESPACE_LIST)) {
+      logPage = new ChangedNamespaceListLogPage(logPageBuffer);
+    } else {
+      System.out.println("Log page type not supported yet");
+      return;
+    }
+
+    final LogPage finalLogPage = logPage;
+    adminGetLogPageResponse.setCallback(new OperationCallback() {
+      @Override
+      public void onStart() {
+
+      }
+
+      @Override
+      public void onComplete() {
+        System.out.println("Get Log Page Command completed...");
+        if (logPageIdentifier.equals(LogPageIdentifier.ERROR_INFORMATION)) {
+          System.out.println("Error Information Log Page:");
+          ErrorInformationLogPage errorInformationLogPage =
+              (ErrorInformationLogPage) finalLogPage;
+          for (int i = 0; i < errorInformationLogPage.getNumLogEntries(); i++) {
+            ErrorInformationLogEntry logEntry = errorInformationLogPage.getLogEntry(i);
+            if (logEntry.getErrorCount().isValid()) {
+              System.out.println("Log Entry " + logEntry.getErrorCount().getValue());
+              System.out.println("\tSubmission Queue ID = " +
+                  logEntry.getSubmissionQueueId().toString());
+              System.out.println("\tCommand ID = " + logEntry.getCommandId());
+              /* TODO: all of status field */
+              System.out.println("\tStatus Code Type = " +
+                  logEntry.getStatusField().getStatusCodeType().toInt() + " " +
+                  logEntry.getStatusField().getStatusCodeType().getDescription());
+              System.out.println("\tParameter Error Location = {bit = " +
+                  logEntry.getParameterErrorLocation().getBitLocation() +
+                  ", byte = " + logEntry.getParameterErrorLocation().getByteLocation() + "}");
+              System.out.println("\tLBA = " + logEntry.getLba());
+              System.out.println("\tNamespace = " + logEntry.getNamespaceIdentifier());
+              System.out.println("\tVendor Specific Information Available = " +
+                  logEntry.isVendorSpecificInformationAvailable());
+              if (logEntry.isVendorSpecificInformationAvailable()) {
+                System.out.println("\tVendor Specific Information Log Page Id = " +
+                    logEntry.getVendorSpecificInformationLogPage().toByte());
+              }
+              System.out.println("\tCommand Specific Information = " +
+                  logEntry.getCommandSpecificInformation());
+            }
+          }
+        } else if (logPageIdentifier.equals(LogPageIdentifier.CHANGED_NAMESPACE_LIST)) {
+          System.out.println("Changed Namespace List Log Page:");
+          ChangedNamespaceListLogPage changedNamespaceListLogPage =
+              (ChangedNamespaceListLogPage)finalLogPage;
+          for (int i = 0; i < ChangedNamespaceListLogPage.getNumberOfEntries(); i++) {
+            NamespaceIdentifier namespaceIdentifier =
+                changedNamespaceListLogPage.getNamespaceIdentifier(i);
+            if (namespaceIdentifier != null) {
+              System.out.println("\t" + i + " = " + namespaceIdentifier);
+            }
+          }
+        } else {
+          System.out.println("Log page type not supported yet ???");
+        }
+        stopPoll = true;
+      }
+
+      @Override
+      public void onFailure(RdmaException exception) {
+        System.out.println(exception.getMessage());
+        stopPoll = true;
+      }
+    });
+
+    adminGetLogPageCommand.execute(adminGetLogPageResponse);
+
+    while (!stopPoll) {
+      adminQueuePair.poll();
+    }
   }
 
   private class PrintControllerInfo implements TestCall {
@@ -200,13 +322,13 @@ public class NvmfDiagnostics {
 
         @Override
         public void onComplete() {
-          System.out.println("Command completed waiting for event...");
+          System.out.println("Asynchronous Event Request command completed waiting for event...");
         }
 
         @Override
         public void onFailure(RdmaException exception) {
           System.out.println(exception.getMessage());
-          System.exit(-1);
+          stopPoll = true;
         }
       });
 
@@ -223,8 +345,8 @@ public class NvmfDiagnostics {
           AdminAsynchronousEventRequestResponseCqe asynchronousEventRequestCqe =
               response.getCompletionQueueEntry();
           System.out.println("Asynchronous Event:");
-          System.out.println("\tLog Page Identifier: " +
-              asynchronousEventRequestCqe.getLogPageIdentifier().toByte());
+          LogPageIdentifier logPageIdentifier = asynchronousEventRequestCqe.getLogPageIdentifier();
+          System.out.println("\tLog Page Identifier: " + logPageIdentifier.toByte());
           AsynchronousEventType.Value eventType =
               asynchronousEventRequestCqe.getAsynchronousEventType();
           System.out.println("\tType: " + eventType.toInt() + " - " + eventType.getDescription());
@@ -234,24 +356,25 @@ public class NvmfDiagnostics {
               + eventInformation.getDescription());
           System.out.println();
 
-          /* TODO: Get Log Page */
           try {
+            getLogPage(logPageIdentifier);
+            stopPoll = false;
             asynchronousEventRequestCommand.execute(asychronousEventRequestResponse);
           } catch (IOException e) {
             e.printStackTrace();
-            System.exit(-1);
+            stopPoll = true;
           }
         }
 
         @Override
         public void onFailure(RdmaException exception) {
           System.out.println(exception.getMessage());
-          System.exit(-1);
+          stopPoll = true;
         }
       });
       asynchronousEventRequestCommand.execute(asychronousEventRequestResponse);
       Instant start = Instant.now();
-      while (true) {
+      while (!stopPoll) {
         adminQueuePair.poll();
         if (Duration.between(start, Instant.now()).toMillis() > 60000) {
           controller.keepAlive();

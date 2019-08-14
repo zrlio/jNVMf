@@ -19,7 +19,7 @@ package com.ibm.jnvmf;
 
 import java.nio.ByteOrder;
 
-abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
+abstract class CompletionQueueEntry extends StatusField {
   /*
    * NVMf Spec 1.0 - 2.2 and NVMe Spec 1.3a - 4.6.1
    *
@@ -27,12 +27,7 @@ abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
    * 09:08 SQ head pointer
    * 11:10 Reserved
    * 13:12 Command Identifier
-   * 15:14 Status:
-   *  31 Do not retry
-   *  30 More
-   *  28:29 Reserved
-   *  25:27 Status code type
-   *  17:24 Status code
+   * 15:14 Status Field
    *
    */
 
@@ -44,19 +39,11 @@ abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
   private static final int COMMAND_IDENTIFIER_OFFSET = 12;
   private short commandIdentifier;
 
-  private static final int STATUS_CODE_OFFSET = 14;
+  private static final int STATUS_FIELD_OFFSET = 14;
 
-  private static final int STATUS_CODE_TYPE_OFFSET = 15;
-  private StatusCodeType.Value statusCodeType;
-
-  private static final int MORE_OFFSET = 15;
-  private static final int MORE_BITOFFSET = 6;
-  private boolean more;
-
-  private static final int DO_NOT_RETRY_OFFSET = 15;
-  private static final int DO_NOT_RETRY_BITOFFSET = 7;
-  private boolean doNotRetry;
-
+  CompletionQueueEntry() {
+    super(STATUS_FIELD_OFFSET);
+  }
 
   public final short getSubmissionQueueHeadPointer() {
     return submissionQueueHeadPointer;
@@ -70,24 +57,7 @@ abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
     return buffer.getShort(COMMAND_IDENTIFIER_OFFSET);
   }
 
-  int getStatusCodeRaw(NativeBuffer buffer) {
-    int raw = buffer.getShort(STATUS_CODE_OFFSET);
-    return BitUtil.getBits(raw, 1, 8);
-  }
-
   public abstract StatusCode.Value getStatusCode();
-
-  public final StatusCodeType.Value getStatusCodeType() {
-    return statusCodeType;
-  }
-
-  public final boolean getMore() {
-    return more;
-  }
-
-  public final boolean getDoNotRetry() {
-    return doNotRetry;
-  }
 
   @Override
   void update(NativeBuffer buffer) {
@@ -95,11 +65,6 @@ abstract class CompletionQueueEntry extends Updatable<NativeBuffer> {
     buffer.order(ByteOrder.LITTLE_ENDIAN);
     submissionQueueHeadPointer = buffer.getShort(SUBMISSION_QUEUE_HEAD_POINTER_OFFSET);
     commandIdentifier = getCommandIdentifier(buffer);
-    int b1 = buffer.get(STATUS_CODE_TYPE_OFFSET);
-    statusCodeType = StatusCodeType.getInstance().valueOf(BitUtil.getBits(b1, 1, 3));
-    assert (MORE_OFFSET == STATUS_CODE_TYPE_OFFSET);
-    more = BitUtil.getBit(b1, MORE_BITOFFSET);
-    assert (DO_NOT_RETRY_OFFSET == STATUS_CODE_TYPE_OFFSET);
-    doNotRetry = BitUtil.getBit(b1, DO_NOT_RETRY_BITOFFSET);
+    super.update(buffer);
   }
 }

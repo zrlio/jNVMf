@@ -22,6 +22,8 @@ class AdminCommandOpcode extends CommandOpcode {
    * NVMe Spec 1.3a - 5
    */
 
+  static final AdminCommandOpcode GET_LOG_PAGE =
+      new AdminCommandOpcode(false, 0, DataTransfer.CONTROLLER_TO_HOST);
   static final AdminCommandOpcode IDENTIFY =
       new AdminCommandOpcode(false, 1, DataTransfer.CONTROLLER_TO_HOST);
   static final AdminCommandOpcode ASYNCHRONOUS_EVENT_REQUEST =

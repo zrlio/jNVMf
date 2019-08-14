@@ -29,6 +29,6 @@ public class NvmCompletionQueueEntry extends CompletionQueueEntry {
   @Override
   void update(NativeBuffer buffer) {
     super.update(buffer);
-    statusCodeValue = getStatusCodeType().nvmValueOf(getStatusCodeRaw(buffer));
+    statusCodeValue = getNvmStatusCode();
   }
 }

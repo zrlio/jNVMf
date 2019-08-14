@@ -29,6 +29,6 @@ public class FabricsCompletionQueueEntry extends CompletionQueueEntry {
   @Override
   void update(NativeBuffer buffer) {
     super.update(buffer);
-    statusCodeValue = getStatusCodeType().fabricsValueOf(getStatusCodeRaw(buffer));
+    statusCodeValue = getFabricsStatusCode();
   }
 }

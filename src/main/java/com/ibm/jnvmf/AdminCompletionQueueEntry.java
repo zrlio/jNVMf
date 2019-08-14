@@ -29,6 +29,6 @@ public class AdminCompletionQueueEntry extends CompletionQueueEntry {
   @Override
   void update(NativeBuffer buffer) {
     super.update(buffer);
-    statusCodeValue = getStatusCodeType().adminValueOf(getStatusCodeRaw(buffer));
+    statusCodeValue = getAdminStatusCode();
   }
 }

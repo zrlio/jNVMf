@@ -49,4 +49,9 @@ public final class QueueId {
   public int hashCode() {
     return (int) id;
   }
+
+  @Override
+  public String toString() {
+    return Short.toString(id);
+  }
 }
