@@ -25,7 +25,7 @@ jNVMf is a Java library for remote access to NVMe storage. It implements client 
 
 ## Building jNVMf
 
-Building the source requires [Apache Maven](http://maven.apache.org/) and a Java JDK with Java version 8 or higher.
+Building the source requires [Apache Maven](http://maven.apache.org/) and a Java JDK with Java version 8.
 jNVMf depends on [DiSNI](http://www.github.com/zrlio/disni) while the java dependecy is automatically picked up from maven central you need to download and compile the native library of DiSNI. Check the DiSNI README for instructions on how to build the native library. To build jNVMf use:
 
 ``mvn -DskipTests package`` or ``mvn -DskipTests install``
@@ -42,17 +42,17 @@ where ``destinationAddress`` is the target IP address, ``localAddress`` is the l
 
 jNVMf provides a small benchmark tool. Run:
 
-``java -cp target/jnvmf-1.6-jar-with-dependencies.jar:target/jnvmf-1.6-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark 
+``java -cp target/jnvmf-1.7-jar-with-dependencies.jar:target/jnvmf-1.7-tests.jar com.ibm.jnvmf.utils.NvmfClientBenchmark 
 --help``
 
 to shows the available arguments. 
 
 For example:
 
-``java -cp target/jnvmf-1.6-jar-with-dependencies.jar:target/jnvmf-1.6-tests.jar com.ibm.jnvmf.benchmark.NvmfClientBenchmark -a 10.100.0.22 -p 4420 -g 4096 -i 3 -m RANDOM -n 10 -nqn nqn.2016-06.io.spdk:cnode1 -o bench.csv -qd 1 -rw read -s 4096 -qs 64 -H -I``
+``java -cp target/jnvmf-1.7-jar-with-dependencies.jar:target/jnvmf-1.7-tests.jar com.ibm.jnvmf.utils.NvmfClientBenchmark -a 10.100.0.22 -p 4420 -g 4096 -i 3 -m RANDOM -n 10 -nqn nqn.2016-06.io.spdk:cnode1 -o bench.csv -qd 1 -rw read -s 4096 -qs 64 -H -I``
 
 * executes a ``-m RANDOM`` ``-rw read`` test
-* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``nqn nqn.2016-06.io.spdk:cnode1``
+* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``-nqn nqn.2016-06.io.spdk:cnode1``
 * all accesses are aligned to ``-g 4096`` bytes
 * statistics are printed every ``-i 3`` seconds ``-n 10`` times
 * output is written to ``-o bench.csv`` in csv format
@@ -61,6 +61,20 @@ For example:
 * queue size ``-qs 64`` entries
 * histogram ``-H``
 * RDMA inline data ``-I``
+
+## Run diagnostics
+
+jNVMf offers a tool to run diagnostics. Print help with:
+
+``java -cp target/jnvmf-1.7-jar-with-dependencies.jar:target/jnvmf-1.7-tests.jar com.ibm.jnvmf.utils.NvmfDiagnostics 
+  --help``
+  
+Example:
+
+``java -Djnvmf.legacy=true -cp jnvmf-1.7-jar-with-dependencies.jar:jnvmf-1.7-tests.jar com.ibm.jnvmf.utils.NvmfDiagnostics -a 10.100.0.22 -p 4420 -nqn nqn.2016-06.io.spdk:cnode1 -t asyncevent``
+
+* executes ``-t asyncevent`` test
+* to a target at ``-a 10.100.0.22``, ``-p 4420`` with controller ``-nqn nqn.2016-06.io.spdk:cnode1``
 
 ## Example API usage
 
